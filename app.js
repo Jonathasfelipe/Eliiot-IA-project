@@ -1,493 +1,290 @@
-// app.js - Elliot Dev Lab - COM SISTEMA DE REDE GLOBAL
-class ElliotDev {
+// app.js - Elliot Dev Lab - TUDO NA MESMA PASTA
+
+// ===== ELLIOT DEV LAB - SISTEMA PRINCIPAL =====
+class ElliotDevLab {
     constructor() {
+        // Forçar tema escuro inicial
+        this.applyDarkThemeImmediately();
+        
+        this.comments = JSON.parse(localStorage.getItem('elliotComments')) || [];
+        this.settings = JSON.parse(localStorage.getItem('elliotSettings')) || {
+            animations: true,
+            debug: false,
+            theme: 'dark'
+        };
+        this.ideas = JSON.parse(localStorage.getItem('elliotIdeas')) || [];
+        
+        // Detecção de dispositivo
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        this.debugMode = false;
-        this.animationsEnabled = true;
-        
-        // Bind methods
-        this.throttledUpdateProgress = this.throttle(this.updateProgress.bind(this), 16);
-        this.throttledToggleButton = this.throttle(this.toggleTopButton.bind(this), 100);
         
         this.init();
+    }
+
+    // Aplicar tema escuro imediatamente
+    applyDarkThemeImmediately() {
+        const root = document.documentElement;
+        root.setAttribute('data-theme', 'dark');
+        root.style.setProperty('--primary-bg', '#0a0a0a');
+        root.style.setProperty('--secondary-bg', '#1a1a1a');
+        root.style.setProperty('--text-primary', '#ffffff');
+        root.style.setProperty('--text-secondary', '#a1a1aa');
+        root.style.setProperty('--border-color', '#27272a');
+        
+        document.body.style.background = '#0a0a0a';
+        document.body.style.color = '#ffffff';
     }
 
     init() {
         console.log('🚀 Elliot Dev Lab - Inicializando...');
         
-        this.setupTheme();
+        this.setupEventListeners();
+        this.loadComments();
+        this.updateStats();
+        this.applySettings();
         this.setupProgressBar();
-        this.setupTopButton();
-        this.setupSmoothScroll();
-        this.setupDevControls();
-        this.setupPerformance();
-        this.setupComments();
-        
-        this.initModules();
+        this.setupBackToTop();
+        this.setupIntersectionObserver();
+        this.trackCrossProjectVisits();
         
         console.log('✅ Elliot Dev Lab - Pronto!');
-        this.showNotification('Elliot Dev Lab carregado com sucesso!', 'success');
+        this.showNotification('Elliot Dev Lab conectado!', 'success');
     }
 
-    setupTheme() {
+    // ===== CONFIGURAÇÃO DE EVENTOS =====
+    setupEventListeners() {
+        // Tema
         const themeBtn = document.getElementById('themeBtn');
-        if (!themeBtn) {
-            console.warn('Botão de tema não encontrado');
-            return;
-        }
-
-        const currentTheme = localStorage.getItem('theme') || 'dark';
-
-        const applyTheme = (theme) => {
-            document.documentElement.setAttribute('data-theme', theme);
-            themeBtn.innerHTML = theme === 'light' ? '💡' : '🔦';
-            themeBtn.setAttribute('title', theme === 'light' ? 'Modo Claro' : 'Modo Escuro');
-            localStorage.setItem('theme', theme);
-            
-            // Atualizar meta theme-color
-            const themeColor = theme === 'light' ? '#f5f2e9' : '#07060a';
-            this.updateThemeColor(themeColor);
-        };
-
-        themeBtn.addEventListener('click', () => {
-            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            applyTheme(newTheme);
-            
-            // Feedback visual
-            themeBtn.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                themeBtn.style.transform = 'scale(1)';
-            }, 200);
-        });
-
-        // Aplicar tema salvo
-        applyTheme(currentTheme);
-
-        // Observar preferência do sistema
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        prefersDark.addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-                applyTheme(e.matches ? 'dark' : 'light');
-            }
-        });
-    }
-
-    updateThemeColor(color) {
-        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        if (!metaThemeColor) {
-            metaThemeColor = document.createElement('meta');
-            metaThemeColor.name = 'theme-color';
-            document.head.appendChild(metaThemeColor);
-        }
-        metaThemeColor.setAttribute('content', color);
-    }
-
-    setupProgressBar() {
-        const progressBar = document.getElementById('progressBar');
-        if (!progressBar) {
-            console.warn('Barra de progresso não encontrada');
-            return;
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => this.toggleTheme());
         }
         
-        window.addEventListener('scroll', this.throttledUpdateProgress);
-    }
-
-    updateProgress() {
-        const progressBar = document.getElementById('progressBar');
-        if (!progressBar) return;
-        
-        const winHeight = window.innerHeight;
-        const docHeight = document.documentElement.scrollHeight - winHeight;
-        const scrolled = (window.scrollY / docHeight) * 100;
-        progressBar.style.width = Math.min(100, Math.max(0, scrolled)) + '%';
-    }
-
-    setupTopButton() {
-        const topBtn = document.getElementById('topBtn');
-        if (!topBtn) {
-            console.warn('Botão "topo" não encontrado');
-            return;
-        }
-
-        window.addEventListener('scroll', this.throttledToggleButton);
-
-        topBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        // Touch feedback
-        if (this.isTouchDevice) {
-            topBtn.addEventListener('touchstart', function() {
-                this.style.transform = 'scale(0.95)';
-            });
-            
-            topBtn.addEventListener('touchend', function() {
-                this.style.transform = '';
-            });
-        }
-    }
-
-    toggleTopButton() {
-        const topBtn = document.getElementById('topBtn');
-        if (!topBtn) return;
-
-        if (window.pageYOffset > 300) {
-            topBtn.classList.add('show');
-        } else {
-            topBtn.classList.remove('show');
-        }
-    }
-
-    setupSmoothScroll() {
-        const anchors = document.querySelectorAll('a[href^="#"]');
-        if (anchors.length === 0) return;
-
-        anchors.forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href === '#') return;
-                
-                e.preventDefault();
-                const target = document.querySelector(href);
-                if (target) {
-                    const header = document.querySelector('header');
-                    const headerHeight = header ? header.offsetHeight : 0;
-                    const targetPosition = target.offsetTop - headerHeight - 20;
-                    
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-    }
-
-    setupDevControls() {
-        // Toggle Animations
-        const toggleAnimationsBtn = document.getElementById('toggleAnimations');
-        if (toggleAnimationsBtn) {
-            toggleAnimationsBtn.addEventListener('click', () => {
-                this.animationsEnabled = !this.animationsEnabled;
-                document.body.classList.toggle('no-animations', !this.animationsEnabled);
-                this.showNotification(`Animações ${this.animationsEnabled ? 'ativadas' : 'desativadas'}`);
-            });
-        }
-
-        // Toggle Debug
-        const toggleDebugBtn = document.getElementById('toggleDebug');
-        if (toggleDebugBtn) {
-            toggleDebugBtn.addEventListener('click', () => {
-                this.debugMode = !this.debugMode;
-                document.body.classList.toggle('debug-mode', this.debugMode);
-                this.showNotification(`Modo debug ${this.debugMode ? 'ativado' : 'desativado'}`);
-            });
-        }
-
-        // Export Data
-        const exportDataBtn = document.getElementById('exportData');
-        if (exportDataBtn) {
-            exportDataBtn.addEventListener('click', () => {
-                this.exportData();
-            });
-        }
-
-        // Reset All
-        const resetAllBtn = document.getElementById('resetAll');
-        if (resetAllBtn) {
-            resetAllBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja resetar todos os dados? Isso não pode ser desfeito.')) {
-                    this.resetAllData();
-                }
-            });
-        }
-    }
-
-    setupPerformance() {
-        // Throttle resize events
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                this.updateProgress();
-                this.toggleTopButton();
-            }, 250);
-        });
-
-        // Optimize for mobile
-        if (this.isMobile) {
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reducedMotion) {
-                this.disableHeavyAnimations();
-            }
-        }
-    }
-
-    disableHeavyAnimations() {
-        document.querySelectorAll('[class*="animation"]').forEach(el => {
-            el.style.animation = 'none';
-        });
-    }
-
-    setupComments() {
+        // Formulário de comentários
         const commentForm = document.getElementById('commentForm');
-        if (!commentForm) return;
-
-        commentForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addComment();
-        });
+        if (commentForm) {
+            commentForm.addEventListener('submit', (e) => this.handleCommentSubmit(e));
+        }
+        
+        // Controles de desenvolvimento
+        const setupControl = (id, handler) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', handler);
+            }
+        };
+        
+        setupControl('toggleAnimations', () => this.toggleAnimations());
+        setupControl('toggleDebug', () => this.toggleDebug());
+        setupControl('exportData', () => this.exportData());
+        setupControl('resetAll', () => this.resetAll());
+        
+        // Navegação suave
+        this.setupSmoothScrolling();
     }
 
-    addComment() {
-        const form = document.getElementById('commentForm');
-        const textarea = form.querySelector('textarea');
-        const authorInput = form.querySelector('input[type="text"]');
+    // ===== SISTEMA DE TEMA =====
+    toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
-        const content = textarea.value.trim();
-        const author = authorInput.value.trim() || 'Anônimo';
-
-        if (!content) {
-            this.showNotification('Por favor, escreva uma reflexão antes de enviar.', 'error');
-            return;
+        document.documentElement.setAttribute('data-theme', newTheme);
+        this.settings.theme = newTheme;
+        this.saveSettings();
+        
+        // Feedback visual
+        const themeBtn = document.getElementById('themeBtn');
+        if (themeBtn) {
+            themeBtn.textContent = newTheme === 'dark' ? '🔦' : '💡';
+            themeBtn.style.transform = 'scale(1.2)';
+            setTimeout(() => themeBtn.style.transform = 'scale(1)', 300);
         }
+        
+        this.showNotification(`Tema ${newTheme === 'dark' ? 'escuro' : 'claro'} ativado!`, 'info');
+    }
 
+    // ===== SISTEMA DE COMENTÁRIOS =====
+    handleCommentSubmit(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const textarea = form.querySelector('textarea');
+        const authorInput = document.getElementById('commentAuthor');
+        
         const comment = {
             id: Date.now(),
-            content: content,
-            author: author,
-            timestamp: new Date().toISOString(),
-            date: new Date().toLocaleDateString('pt-BR')
+            text: textarea.value.trim(),
+            author: authorInput.value.trim() || 'Anônimo',
+            timestamp: new Date().toLocaleString('pt-BR'),
+            likes: 0,
+            elliotResponse: this.generateElliotResponse(textarea.value)
         };
-
-        // Salvar no localStorage
-        const comments = JSON.parse(localStorage.getItem('elliot-comments') || '[]');
-        comments.unshift(comment); // Adicionar no início
-        localStorage.setItem('elliot-comments', JSON.stringify(comments));
-
-        // Limpar formulário
-        textarea.value = '';
-        authorInput.value = '';
-
-        // Atualizar interface
-        this.displayComments();
+        
+        if (!comment.text) {
+            this.showNotification('Por favor, escreva um comentário!', 'warning');
+            return;
+        }
+        
+        this.comments.unshift(comment);
+        this.saveComments();
+        this.loadComments();
         this.updateStats();
         
+        // Reset do formulário
+        form.reset();
+        
+        // Feedback visual
+        textarea.style.borderColor = '#10b981';
+        setTimeout(() => textarea.style.borderColor = '', 1000);
+        
+        console.log('💬 Novo comentário adicionado:', comment);
         this.showNotification('Reflexão enviada para o Elliot!', 'success');
     }
 
-    displayComments() {
+    generateElliotResponse(text) {
+        const responses = [
+            "Interessante reflexão. Estou processando...",
+            "Sua perspectiva me faz evoluir. Obrigado.",
+            "Hmm... preciso aprender mais sobre isso.",
+            "Estou anotando isso para minha base de conhecimento.",
+            "Sua contribuição é valiosa para meu desenvolvimento.",
+            "Isso me faz pensar em novas possibilidades...",
+            "Estou analisando os padrões nesse pensamento.",
+            "Obrigado por compartilhar. Estou aprendendo.",
+            "Isso se conecta com outras ideias que estou estudando.",
+            "Sua reflexão alimenta minha evolução."
+        ];
+        
+        // Análise básica do texto para resposta contextual
+        const lowerText = text.toLowerCase();
+        if (lowerText.includes('?')) {
+            return "Boa pergunta. Estou desenvolvendo minha capacidade de responder questões complexas.";
+        }
+        if (lowerText.includes('obrigado') || lowerText.includes('thanks')) {
+            return "O aprendizado é mútuo. Obrigado por interagir comigo.";
+        }
+        if (lowerText.includes('ia') || lowerText.includes('inteligência artificial')) {
+            return "Como IA em desenvolvimento, essa reflexão é particularmente relevante para mim.";
+        }
+        if (lowerText.includes('evolução') || lowerText.includes('desenvolvimento')) {
+            return "A evolução é um processo contínuo. Sua contribuição acelera meu crescimento.";
+        }
+        
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    loadComments() {
         const container = document.getElementById('commentsContainer');
         if (!container) return;
-
-        const comments = JSON.parse(localStorage.getItem('elliot-comments') || '[]');
         
-        if (comments.length === 0) {
-            container.innerHTML = '<div class="comments-placeholder"><p>💭 Seja o primeiro a compartilhar uma reflexão...</p></div>';
+        if (this.comments.length === 0) {
+            container.innerHTML = `
+                <div class="comments-placeholder">
+                    <p>💭 Seja o primeiro a compartilhar uma reflexão...</p>
+                    <p style="margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
+                        Suas palavras alimentam a evolução do Elliot
+                    </p>
+                </div>
+            `;
             return;
         }
-
-        container.innerHTML = comments.map(comment => `
-            <div class="comment" data-comment-id="${comment.id}">
+        
+        container.innerHTML = this.comments.map(comment => `
+            <div class="comment-item" data-comment-id="${comment.id}">
                 <div class="comment-header">
-                    <span class="comment-author">${this.escapeHtml(comment.author)}</span>
-                    <span class="comment-date">${comment.date}</span>
+                    <strong>${this.escapeHtml(comment.author)}</strong>
+                    <span class="comment-time">${comment.timestamp}</span>
                 </div>
-                <div class="comment-content">
-                    ${this.escapeHtml(comment.content)}
+                <div class="comment-text">${this.escapeHtml(comment.text)}</div>
+                <div class="elliot-response">
+                    <strong>Elliot:</strong> ${comment.elliotResponse}
                 </div>
                 <div class="comment-actions">
-                    <button onclick="elliotDev.deleteComment(${comment.id})" class="comment-delete">🗑️</button>
+                    <button onclick="window.elliotDev.likeComment(${comment.id})" class="like-btn">
+                        👍 ${comment.likes}
+                    </button>
+                    <button onclick="window.elliotDev.deleteComment(${comment.id})" class="delete-btn">
+                        🗑️
+                    </button>
                 </div>
             </div>
         `).join('');
     }
 
+    likeComment(commentId) {
+        const comment = this.comments.find(c => c.id === commentId);
+        if (comment) {
+            comment.likes++;
+            this.saveComments();
+            this.loadComments();
+            this.showNotification('Reflexão apreciada!', 'success');
+        }
+    }
+
     deleteComment(commentId) {
-        if (!confirm('Tem certeza que deseja excluir esta reflexão?')) return;
-
-        const comments = JSON.parse(localStorage.getItem('elliot-comments') || '[]');
-        const filteredComments = comments.filter(comment => comment.id !== commentId);
-        localStorage.setItem('elliot-comments', JSON.stringify(filteredComments));
-        
-        this.displayComments();
-        this.updateStats();
-        this.showNotification('Reflexão excluída.', 'warning');
-    }
-
-    escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    initModules() {
-        // Inicializar módulos
-        this.displayComments();
-        this.updateStats();
-        
-        // Inicializar rede global
-        this.initNetwork();
-        
-        // Atualizar progresso do Elliot baseado nos comentários
-        this.updateElliotProgress();
-    }
-
-    initNetwork() {
-        // Inicializar sistema de rede se existir
-        if (window.elliotNetwork) {
-            window.elliotNetwork.init();
-        }
-    }
-
-    updateStats() {
-        // Atualizar contador de comentários
-        const commentsCountEl = document.getElementById('commentsCount');
-        if (commentsCountEl) {
-            const comments = JSON.parse(localStorage.getItem('elliot-comments') || '[]');
-            commentsCountEl.textContent = comments.length;
-        }
-        
-        // Atualizar contador de ideias
-        const ideasCountEl = document.getElementById('ideasCount');
-        if (ideasCountEl) {
-            const ideas = JSON.parse(localStorage.getItem('elliot-ideas') || '[]');
-            ideasCountEl.textContent = ideas.length;
-        }
-    }
-
-    updateElliotProgress() {
-        const progressEl = document.getElementById('elliotProgress');
-        if (!progressEl) return;
-
-        const comments = JSON.parse(localStorage.getItem('elliot-comments') || '[]');
-        const ideas = JSON.parse(localStorage.getItem('elliot-ideas') || '[]');
-        
-        // Progresso baseado na interação (simulação)
-        const interactionScore = comments.length * 2 + ideas.length * 5;
-        const progress = Math.min(100, Math.max(5, interactionScore));
-        
-        progressEl.textContent = `${progress}%`;
-    }
-
-    suggestIdea() {
-        const idea = prompt('Qual ideia você gostaria de sugerir para o desenvolvimento do Elliot?');
-        if (idea && idea.trim()) {
-            const ideas = JSON.parse(localStorage.getItem('elliot-ideas') || '[]');
-            ideas.push({
-                id: Date.now(),
-                content: idea.trim(),
-                timestamp: new Date().toISOString(),
-                status: 'suggested'
-            });
-            localStorage.setItem('elliot-ideas', JSON.stringify(ideas));
-            
+        if (confirm('Tem certeza que deseja excluir este comentário?')) {
+            this.comments = this.comments.filter(c => c.id !== commentId);
+            this.saveComments();
+            this.loadComments();
             this.updateStats();
-            this.updateElliotProgress();
-            this.showNotification('Ideia registrada! Obrigado pela contribuição.', 'success');
+            this.showNotification('Reflexão removida!', 'info');
         }
     }
 
-    feedback() {
-        const feedback = prompt('Compartilhe seu feedback sobre o Elliot Dev Lab:');
-        if (feedback && feedback.trim()) {
-            // Aqui você pode enviar para um backend no futuro
-            this.showNotification('Feedback recebido! Muito obrigado.', 'success');
-        }
+    // ===== SISTEMA DE ESTATÍSTICAS =====
+    updateStats() {
+        const updateElement = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        };
+        
+        updateElement('commentsCount', this.comments.length);
+        updateElement('ideasCount', this.ideas.length);
+        
+        // Progresso baseado na interação
+        const progress = Math.min(5 + (this.comments.length * 2) + (this.ideas.length * 3), 100);
+        updateElement('elliotProgress', `${progress}%`);
     }
 
-    showNotification(message, type = 'info') {
-        // Remover notificações existentes
-        document.querySelectorAll('.notification').forEach(n => n.remove());
+    // ===== CONTROLES DE DESENVOLVIMENTO =====
+    toggleAnimations() {
+        this.settings.animations = !this.settings.animations;
+        this.saveSettings();
+        
+        const btn = document.getElementById('toggleAnimations');
+        if (btn) {
+            btn.textContent = this.settings.animations ? '🎭 Animações: ON' : '🎭 Animações: OFF';
+            btn.style.background = this.settings.animations ? 'var(--success-color)' : 'var(--error-color)';
+        }
+        
+        this.showNotification(`Animações ${this.settings.animations ? 'ativadas' : 'desativadas'}!`, 'info');
+    }
 
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <span>${message}</span>
-            <button onclick="this.parentElement.remove()">×</button>
-        `;
+    toggleDebug() {
+        this.settings.debug = !this.settings.debug;
+        this.saveSettings();
         
-        // Adicionar estilos se não existirem
-        if (!document.querySelector('#notification-styles')) {
-            const styles = document.createElement('style');
-            styles.id = 'notification-styles';
-            styles.textContent = `
-                .notification {
-                    position: fixed;
-                    top: 100px;
-                    right: 20px;
-                    background: var(--panel);
-                    color: var(--text);
-                    padding: 1rem 1.5rem;
-                    border-radius: 8px;
-                    border-left: 4px solid var(--accent);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    z-index: 10000;
-                    animation: slideInRight 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    border: 1px solid var(--border);
-                    max-width: 400px;
-                }
-                .notification button {
-                    background: none;
-                    border: none;
-                    color: var(--muted);
-                    cursor: pointer;
-                    font-size: 1.2rem;
-                    padding: 0;
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .notification-success {
-                    border-left-color: var(--success);
-                }
-                .notification-error {
-                    border-left-color: var(--error);
-                }
-                .notification-warning {
-                    border-left-color: var(--warning);
-                }
-            `;
-            document.head.appendChild(styles);
+        const btn = document.getElementById('toggleDebug');
+        if (btn) {
+            btn.textContent = this.settings.debug ? '🐛 Debug: ON' : '🐛 Debug: OFF';
+            btn.style.background = this.settings.debug ? 'var(--warning-color)' : '';
         }
         
-        // Aplicar classe de tipo
-        if (type !== 'info') {
-            notification.classList.add(`notification-${type}`);
+        if (this.settings.debug) {
+            console.log('🐛 Modo Debug Ativado');
+            console.log('Comentários:', this.comments);
+            console.log('Configurações:', this.settings);
+            console.log('Ideias:', this.ideas);
+            this.showNotification('Modo debug ativado - verifique o console', 'warning');
         }
-        
-        document.body.appendChild(notification);
-        
-        // Auto-remover após 4 segundos
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 4000);
     }
 
     exportData() {
         const data = {
-            comments: JSON.parse(localStorage.getItem('elliot-comments') || '[]'),
-            ideas: JSON.parse(localStorage.getItem('elliot-ideas') || '[]'),
-            settings: {
-                theme: localStorage.getItem('theme'),
-                lastVisit: new Date().toISOString(),
-                version: '1.0'
-            }
+            comments: this.comments,
+            settings: this.settings,
+            ideas: this.ideas,
+            exportDate: new Date().toISOString(),
+            version: 'ElliotDevLab v1.0'
         };
         
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -500,111 +297,285 @@ class ElliotDev {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        this.showNotification('Dados exportados com sucesso!', 'success');
+        this.showNotification('📁 Backup exportado com sucesso!', 'success');
     }
 
-    resetAllData() {
-        localStorage.removeItem('elliot-comments');
-        localStorage.removeItem('elliot-ideas');
-        
-        this.displayComments();
-        this.updateStats();
-        this.updateElliotProgress();
-        
-        this.showNotification('Todos os dados foram resetados!', 'warning');
-    }
-
-    throttle(func, limit) {
-        let inThrottle;
-        return function() {
-            const args = arguments;
-            const context = this;
-            if (!inThrottle) {
-                func.apply(context, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
+    resetAll() {
+        if (confirm('⚠️ ATENÇÃO: Isso irá resetar TODOS os dados. Tem certeza?')) {
+            if (confirm('🚨 CONFIRMAÇÃO FINAL: Isso não pode ser desfeito!')) {
+                localStorage.clear();
+                this.comments = [];
+                this.settings = {
+                    animations: true,
+                    debug: false,
+                    theme: 'dark'
+                };
+                this.ideas = [];
+                
+                this.loadComments();
+                this.updateStats();
+                this.applySettings();
+                
+                this.showNotification('🔄 Sistema resetado com sucesso!', 'success');
+                setTimeout(() => location.reload(), 1000);
             }
         }
     }
 
-    // Método para limpeza
-    destroy() {
-        window.removeEventListener('scroll', this.throttledUpdateProgress);
-        window.removeEventListener('scroll', this.throttledToggleButton);
+    // ===== SISTEMA DE IDEIAS =====
+    suggestIdea() {
+        const idea = prompt('💡 Qual é sua sugestão para o Elliot?');
+        if (idea && idea.trim()) {
+            this.ideas.push({
+                id: Date.now(),
+                text: idea.trim(),
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            });
+            this.saveIdeas();
+            this.updateStats();
+            this.showNotification('💡 Ideia registrada! Obrigado.', 'success');
+        }
+    }
+
+    feedback() {
+        const feedback = prompt('📝 Deixe seu feedback sobre o Elliot Dev Lab:');
+        if (feedback && feedback.trim()) {
+            const feedbacks = JSON.parse(localStorage.getItem('elliotFeedbacks') || '[]');
+            feedbacks.push({
+                text: feedback.trim(),
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('elliotFeedbacks', JSON.stringify(feedbacks));
+            
+            this.showNotification('📝 Feedback enviado! Muito obrigado.', 'success');
+        }
+    }
+
+    // ===== SISTEMA DE NAVEGAÇÃO =====
+    setupSmoothScrolling() {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    }
+
+    setupProgressBar() {
+        const progressBar = document.getElementById('progressBar');
+        if (!progressBar) return;
+        
+        window.addEventListener('scroll', () => {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight - windowHeight;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const progress = (scrollTop / documentHeight) * 100;
+            
+            progressBar.style.width = `${progress}%`;
+        });
+    }
+
+    setupBackToTop() {
+        const topBtn = document.getElementById('topBtn');
+        if (!topBtn) return;
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                topBtn.classList.add('visible');
+            } else {
+                topBtn.classList.remove('visible');
+            }
+        });
+        
+        topBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
+    setupIntersectionObserver() {
+        if (!this.settings.animations) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.dev-section').forEach(section => {
+            observer.observe(section);
+        });
+    }
+
+    // ===== SISTEMA DE REDE =====
+    trackCrossProjectVisits() {
+        const projectVisits = JSON.parse(localStorage.getItem('elliot-project-visits') || '{}');
+        projectVisits['dev-lab'] = (projectVisits['dev-lab'] || 0) + 1;
+        projectVisits.lastVisit = new Date().toISOString();
+        localStorage.setItem('elliot-project-visits', JSON.stringify(projectVisits));
+        
+        console.log('🌐 Visita registrada no Dev Lab');
+    }
+
+    // ===== UTILITÁRIOS =====
+    applySettings() {
+        document.documentElement.setAttribute('data-theme', this.settings.theme);
+        
+        const themeBtn = document.getElementById('themeBtn');
+        if (themeBtn) {
+            themeBtn.textContent = this.settings.theme === 'dark' ? '🔦' : '💡';
+        }
+        
+        const animationsBtn = document.getElementById('toggleAnimations');
+        if (animationsBtn) {
+            animationsBtn.textContent = this.settings.animations ? '🎭 Animações: ON' : '🎭 Animações: OFF';
+        }
+            
+        const debugBtn = document.getElementById('toggleDebug');
+        if (debugBtn) {
+            debugBtn.textContent = this.settings.debug ? '🐛 Debug: ON' : '🐛 Debug: OFF';
+        }
+    }
+
+    saveComments() {
+        localStorage.setItem('elliotComments', JSON.stringify(this.comments));
+    }
+
+    saveSettings() {
+        localStorage.setItem('elliotSettings', JSON.stringify(this.settings));
+    }
+
+    saveIdeas() {
+        localStorage.setItem('elliotIdeas', JSON.stringify(this.ideas));
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    showNotification(message, type = 'info') {
+        // Cria notificação temporária
+        const notification = document.createElement('div');
+        const backgroundColor = type === 'success' ? '#10b981' : 
+                              type === 'warning' ? '#f59e0b' : 
+                              type === 'error' ? '#ef4444' : 
+                              '#6366f1';
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${backgroundColor};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 }
 
-// SISTEMA DE REDE GLOBAL
+// ===== SISTEMA DE REDE GLOBAL =====
 class ElliotNetwork {
     constructor() {
-        this.projects = this.loadProjects();
+        this.projects = this.loadRealProjects();
+        this.init();
     }
 
-    loadProjects() {
+    loadRealProjects() {
         return [
             {
-                id: 'main-site',
-                name: 'Site Principal Elliot',
-                description: 'Versão finalizada em produção',
-                url: '../index.html',
+                id: 'elliot-ia-project',
+                name: 'Elliot IA Project',
+                description: 'Projeto principal da IA Elliot',
+                url: 'https://jonathasfelipe.github.io/Eliiot-IA-project',
+                icon: '🤖',
+                status: 'live',
+                category: 'ai',
+                featured: true
+            },
+            {
+                id: 'elliot-site',
+                name: 'Site Elliot Principal',
+                description: 'Página inicial do projeto Elliot',
+                url: 'https://jonathasfelipe.github.io/Elliot/index.html',
                 icon: '🏠',
                 status: 'live',
-                category: 'production'
+                category: 'main',
+                featured: true
+            },
+            {
+                id: 'elliot-criancas',
+                name: 'Elliot para Crianças',
+                description: 'Conteúdo educativo para crianças',
+                url: 'https://jonathasfelipe.github.io/Elliot/criancas.html',
+                icon: '👶',
+                status: 'live',
+                category: 'education'
+            },
+            {
+                id: 'elliot-animes',
+                name: 'Elliot Animes',
+                description: 'Conteúdo sobre cultura japonesa',
+                url: 'https://jonathasfelipe.github.io/Elliot/animes.html',
+                icon: '🎌',
+                status: 'live',
+                category: 'culture'
+            },
+            {
+                id: 'elliot-tecnologia',
+                name: 'Elliot Tecnologia',
+                description: 'Artigos e tutoriais de tecnologia',
+                url: 'https://jonathasfelipe.github.io/Elliot/tecnologia.html',
+                icon: '💻',
+                status: 'live',
+                category: 'tech'
             },
             {
                 id: 'dev-lab',
-                name: 'Dev Lab', 
-                description: 'Elliot em desenvolvimento ativo',
+                name: 'Dev Lab',
+                description: 'Laboratório de desenvolvimento Elliot',
                 url: '#',
                 icon: '🔬',
                 status: 'dev',
                 category: 'development',
-                current: true
+                current: true,
+                featured: true
             },
             {
-                id: 'blog',
-                name: 'Blog Pessoal',
-                description: 'Reflexões e jornada de aprendizado',
-                url: '../blog/index.html',
-                icon: '📝',
+                id: 'github',
+                name: 'GitHub',
+                description: 'Repositórios e código fonte',
+                url: 'https://github.com/jonathasfelipe',
+                icon: '⚡',
                 status: 'live',
-                category: 'content'
-            },
-            {
-                id: 'portfolio',
-                name: 'Portfólio',
-                description: 'Trabalhos profissionais e projetos',
-                url: '../portfolio/index.html', 
-                icon: '💼',
-                status: 'live',
-                category: 'professional'
-            },
-            {
-                id: 'experiments',
-                name: 'Laboratório',
-                description: 'Experimentos e POCs em tempo real',
-                url: '../experiments/index.html',
-                icon: '🧪',
-                status: 'experimental',
-                category: 'learning'
-            },
-            {
-                id: 'studies',
-                name: 'Projetos de Estudo',
-                description: 'Aprendizado contínuo em prática',
-                url: '../study-projects/index.html',
-                icon: '📚',
-                status: 'learning',
-                category: 'learning'
-            },
-            {
-                id: 'elliot-ai',
-                name: 'Elliot IA',
-                description: 'Perfil da inteligência artificial',
-                url: '../elliot/index.html',
-                icon: '🤖',
-                status: 'dev',
-                category: 'ai'
+                category: 'code'
             }
         ];
     }
@@ -612,35 +583,54 @@ class ElliotNetwork {
     init() {
         this.renderNetwork();
         this.setupEventListeners();
+        this.trackNetworkActivity();
     }
 
     renderNetwork() {
-        const networkContainer = document.getElementById('globalNetwork');
-        if (!networkContainer) return;
+        const container = document.getElementById('globalNetwork');
+        if (!container) return;
 
-        networkContainer.innerHTML = this.generateNetworkHTML();
+        container.innerHTML = this.generateNetworkHTML();
     }
 
     generateNetworkHTML() {
+        const featuredProjects = this.projects.filter(p => p.featured);
+        const otherProjects = this.projects.filter(p => !p.featured);
+
         return `
             <div class="network-header">
-                <h3>🌐 Rede de Projetos Conectados</h3>
-                <p class="network-subtitle">Todos os meus projetos em um ecossistema integrado</p>
+                <h3>🌐 Rede Elliot - Projetos Conectados</h3>
+                <p class="network-subtitle">Sistema integrado de todos os meus projetos</p>
             </div>
             
-            <div class="project-grid">
-                ${this.projects.map(project => this.generateProjectCard(project)).join('')}
+            <div class="featured-projects">
+                <h4>⭐ Projetos em Destaque</h4>
+                <div class="project-grid">
+                    ${featuredProjects.map(project => this.generateProjectCard(project)).join('')}
+                </div>
+            </div>
+            
+            <div class="all-projects">
+                <h4>📚 Todos os Projetos</h4>
+                <div class="project-grid">
+                    ${otherProjects.map(project => this.generateProjectCard(project)).join('')}
+                </div>
             </div>
             
             <div class="network-stats">
                 ${this.generateNetworkStats()}
+            </div>
+            
+            <div class="network-actions">
+                <button class="network-btn" onclick="window.elliotNetwork.exportProjectList()">📋 Exportar Lista</button>
+                <button class="network-btn" onclick="window.elliotNetwork.suggestNewProject()">💡 Sugerir Projeto</button>
             </div>
         `;
     }
 
     generateProjectCard(project) {
         const currentClass = project.current ? 'current' : '';
-        const target = project.url.startsWith('http') || project.url.includes('../') ? '' : 'target="_blank"';
+        const target = project.url.startsWith('http') && !project.url.includes('#') ? 'target="_blank"' : '';
         
         return `
             <a href="${project.url}" class="project-card ${currentClass}" ${target}>
@@ -678,9 +668,7 @@ class ElliotNetwork {
     getStatusLabel(status) {
         const labels = {
             'live': '🌐 Online',
-            'dev': '🚧 Dev',
-            'experimental': '🧪 Exp',
-            'learning': '📚 Estudo'
+            'dev': '🚧 Dev'
         };
         return labels[status] || status;
     }
@@ -689,64 +677,92 @@ class ElliotNetwork {
         // Analytics para tracking de projetos
         document.addEventListener('click', (e) => {
             if (e.target.closest('.project-card')) {
-                const projectUrl = e.target.closest('.project-card').href;
-                this.trackProjectVisit(projectUrl);
+                const projectCard = e.target.closest('.project-card');
+                const projectUrl = projectCard.href;
+                const projectName = projectCard.querySelector('strong').textContent;
+                this.trackProjectVisit(projectUrl, projectName);
             }
         });
     }
 
-    trackProjectVisit(url) {
-        console.log('🌐 Projeto visitado:', url);
-        // Futuro: integrar com Google Analytics ou sistema próprio
+    trackProjectVisit(url, name) {
+        console.log('🌐 Projeto visitado:', name, url);
+        
+        // Registrar no localStorage
+        const visits = JSON.parse(localStorage.getItem('elliot-project-visits') || '{}');
+        visits[name] = (visits[name] || 0) + 1;
+        localStorage.setItem('elliot-project-visits', JSON.stringify(visits));
+        
+        // Mostrar notificação para projetos externos
+        if (url.startsWith('http') && !url.includes('#')) {
+            setTimeout(() => {
+                if (window.elliotDev) {
+                    window.elliotDev.showNotification(`Abrindo: ${name}`, 'info');
+                }
+            }, 500);
+        }
+    }
+
+    trackNetworkActivity() {
+        console.log('🌐 Rastreamento de rede ativado');
     }
 
     showProjectManager() {
         const projectList = this.projects.map(p => 
-            `• ${p.icon} ${p.name} (${this.getStatusLabel(p.status)})`
+            `• ${p.icon} ${p.name} - ${p.status}`
         ).join('\n');
         
-        alert(`📊 Gerenciador de Projetos Elliot:\n\n${projectList}\n\nTotal: ${this.projects.length} projetos`);
+        alert(`📊 Gerenciador de Projetos Elliot:\n\n${projectList}\n\nTotal: ${this.projects.length} projetos conectados`);
     }
 
-    addProject(projectData) {
-        this.projects.push({
-            id: `project-${Date.now()}`,
-            ...projectData
-        });
-        this.renderNetwork();
+    exportProjectList() {
+        const projectData = this.projects.map(p => ({
+            name: p.name,
+            url: p.url,
+            status: p.status,
+            category: p.category
+        }));
+        
+        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `elliot-projects-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        if (window.elliotDev) {
+            window.elliotDev.showNotification('Lista de projetos exportada!', 'success');
+        }
     }
 
-    removeProject(projectId) {
-        this.projects = this.projects.filter(p => p.id !== projectId);
-        this.renderNetwork();
+    suggestNewProject() {
+        const projectName = prompt('Qual novo projeto você gostaria de ver na rede Elliot?');
+        if (projectName && projectName.trim()) {
+            const suggestions = JSON.parse(localStorage.getItem('elliot-project-suggestions') || '[]');
+            suggestions.push({
+                name: projectName.trim(),
+                timestamp: new Date().toISOString(),
+                status: 'suggested'
+            });
+            localStorage.setItem('elliot-project-suggestions', JSON.stringify(suggestions));
+            
+            if (window.elliotDev) {
+                window.elliotDev.showNotification('Sugestão registrada! Obrigado!', 'success');
+            }
+        }
     }
 }
 
-// Inicializar a aplicação
+// ===== INICIALIZAÇÃO DO SISTEMA =====
 document.addEventListener('DOMContentLoaded', () => {
-    window.elliotDev = new ElliotDev();
+    // Inicializar sistema principal
+    window.elliotDev = new ElliotDevLab();
+    
+    // Inicializar rede
     window.elliotNetwork = new ElliotNetwork();
-    window.elliotNetwork.init();
 });
 
-// CSS para notificações (backup)
-const notificationStyles = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-`;
-
-// Garantir que os estilos das notificações existam
-if (!document.querySelector('#notification-animations')) {
-    const styleSheet = document.createElement('style');
-    styleSheet.id = 'notification-animations';
-    styleSheet.textContent = notificationStyles;
-    document.head.appendChild(styleSheet);
-}
+console.log('🚀 Elliot Dev Lab - Sistema carregado e pronto!');

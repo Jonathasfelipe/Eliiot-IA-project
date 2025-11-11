@@ -6,7 +6,7 @@
     <title>Elliot Dev - Laboratório de Ideias</title>
     <meta name="description" content="Laboratório de desenvolvimento - Jonathas Felipe & Elliot IA">
     
-    <!-- CSS -->
+    <!-- CSS DIRETO -->
     <link rel="stylesheet" href="styles.css">
     
     <!-- Fontes -->
@@ -48,6 +48,64 @@
                 <button id="themeBtn" class="theme-btn" title="Mudar tema">🔦</button>
             </div>
         </header>
+
+        <!-- 🧭 NAVEGAÇÃO GLOBAL ENTRE PROJETOS -->
+        <section class="global-nav-section">
+            <div class="nav-container">
+                <h3>🌐 Navegação entre Projetos Elliot</h3>
+                <div class="project-links">
+                    <div class="link-group">
+                        <h4>🚀 Projetos Principais</h4>
+                        <a href="https://jonathasfelipe.github.io/Eliiot-IA-project" class="project-link" target="_blank">
+                            <span class="link-icon">🤖</span>
+                            <span class="link-text">Elliot IA Project</span>
+                            <span class="link-badge">Principal</span>
+                        </a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/index.html" class="project-link" target="_blank">
+                            <span class="link-icon">🏠</span>
+                            <span class="link-text">Site Elliot</span>
+                            <span class="link-badge">Home</span>
+                        </a>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4>📚 Conteúdo Especializado</h4>
+                        <a href="https://jonathasfelipe.github.io/Elliot/criancas.html" class="project-link" target="_blank">
+                            <span class="link-icon">👶</span>
+                            <span class="link-text">Para Crianças</span>
+                            <span class="link-badge">Educação</span>
+                        </a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/animes.html" class="project-link" target="_blank">
+                            <span class="link-icon">🎌</span>
+                            <span class="link-text">Animes</span>
+                            <span class="link-badge">Cultura</span>
+                        </a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/tecnologia.html" class="project-link" target="_blank">
+                            <span class="link-icon">💻</span>
+                            <span class="link-text">Tecnologia</span>
+                            <span class="link-badge">Tech</span>
+                        </a>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4>🔗 Links Rápidos</h4>
+                        <a href="#origem" class="project-link internal">
+                            <span class="link-icon">👤</span>
+                            <span class="link-text">Minha História</span>
+                        </a>
+                        <a href="#comentarios" class="project-link internal">
+                            <span class="link-icon">💬</span>
+                            <span class="link-text">Deixe um Comentário</span>
+                        </a>
+                        <a href="https://github.com/jonathasfelipe" class="project-link" target="_blank">
+                            <span class="link-icon">⚡</span>
+                            <span class="link-text">Meu GitHub</span>
+                            <span class="link-badge">GitHub</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <div class="content-wrapper">
             <main>
@@ -273,9 +331,26 @@
 
                     <div class="quick-actions">
                         <h4>⚡ Ações Rápidas</h4>
-                        <button class="action-btn" onclick="elliotDev.suggestIdea()">💡 Sugerir Ideia</button>
-                        <button class="action-btn" onclick="elliotDev.feedback()">📝 Feedback</button>
-                        <button class="action-btn" onclick="elliotNetwork.showProjectManager()">🌐 Gerenciar Rede</button>
+                        <button class="action-btn" onclick="window.elliotDev.suggestIdea()">💡 Sugerir Ideia</button>
+                        <button class="action-btn" onclick="window.elliotDev.feedback()">📝 Feedback</button>
+                        <button class="action-btn" onclick="window.elliotNetwork.showProjectManager()">🌐 Gerenciar Rede</button>
+                    </div>
+
+                    <!-- 🧭 NAVEGAÇÃO RÁPIDA -->
+                    <div class="quick-nav">
+                        <h4>🧭 Navegação Rápida</h4>
+                        <a href="https://jonathasfelipe.github.io/Eliiot-IA-project" class="nav-quick-link" target="_blank">
+                            <span>🤖 Elliot IA</span>
+                        </a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/index.html" class="nav-quick-link" target="_blank">
+                            <span>🏠 Site Principal</span>
+                        </a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/tecnologia.html" class="nav-quick-link" target="_blank">
+                            <span>💻 Tecnologia</span>
+                        </a>
+                        <a href="https://github.com/jonathasfelipe" class="nav-quick-link" target="_blank">
+                            <span>⚡ GitHub</span>
+                        </a>
                     </div>
                 </div>
             </aside>
@@ -288,15 +363,30 @@
                 <div class="dev-links">
                     <a href="#origem">↑ Início</a>
                     <span>•</span>
-                    <a href="javascript:void(0)" onclick="elliotDev.exportData()">📁 Backup</a>
+                    <a href="javascript:void(0)" onclick="window.elliotDev.exportData()">📁 Backup</a>
                     <span>•</span>
                     <a href="#rede">🌐 Rede</a>
+                    <span>•</span>
+                    <a href="https://jonathasfelipe.github.io/Elliot/index.html" target="_blank">🏠 Site Principal</a>
+                </div>
+                
+                <!-- FOOTER COM LINKS PARA TODOS OS PROJETOS -->
+                <div class="global-footer-links">
+                    <h4>🌐 Todos os Projetos Elliot:</h4>
+                    <div class="footer-project-grid">
+                        <a href="https://jonathasfelipe.github.io/Eliiot-IA-project" target="_blank">🤖 Elliot IA Project</a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/index.html" target="_blank">🏠 Site Elliot</a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/criancas.html" target="_blank">👶 Para Crianças</a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/animes.html" target="_blank">🎌 Animes</a>
+                        <a href="https://jonathasfelipe.github.io/Elliot/tecnologia.html" target="_blank">💻 Tecnologia</a>
+                        <a href="https://github.com/jonathasfelipe" target="_blank">⚡ GitHub</a>
+                    </div>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- JavaScript -->
+    <!-- JavaScript DIRETO -->
     <script src="app.js"></script>
 </body>
 </html>

@@ -1,392 +1,357 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elliot Dev - Laboratório de Ideias</title>
-    <meta name="description" content="Laboratório de desenvolvimento - Jonathas Felipe & Elliot IA">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Elliot IA - Assistente de Gematria e Simbolismo</title>
     
-    <!-- CSS DIRETO -->
-    <link rel="stylesheet" href="styles.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
     
     <!-- Fontes -->
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <meta name="theme-color" content="#07060a">
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+    
+    <!-- Metas -->
+    <meta name="description" content="Elliot IA - Assistente especializado em análise gemátrica, numerologia e simbolismo sagrado">
+    <meta name="theme-color" content="#4B0082">
 </head>
 <body>
-    <!-- 🔬 BANNER DE DESENVOLVIMENTO -->
-    <div class="dev-banner">
-        🚧 VERSÃO DE DESENVOLVIMENTO - Elliot em Evolução 🚧
-    </div>
-
-    <!-- Barra de Progresso -->
-    <div class="progress-bar" id="progressBar"></div>
-
-    <!-- Botão Voltar ao Topo -->
-    <button id="topBtn" class="top-btn" title="Voltar ao topo">↑</button>
-
-    <div class="book-wrap">
-        <header>
-            <div class="brand">
-                <div class="logo">E</div>
-                <div>
-                    <h1>Elliot <span class="dev-badge">DEV</span></h1>
-                    <div class="subtitle">Jonathas Felipe & Elliot IA - Laboratório de Evolução</div>
+    <!-- Container Principal -->
+    <div class="app-container">
+        <!-- Cabeçalho -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="logo">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Elliot <span class="brand-sub">IA</span></h1>
+                        <p class="tagline">Laboratório de Gematria e Simbolismo</p>
+                    </div>
                 </div>
-            </div>
-            
-            <nav class="main-nav">
-                <a href="#origem">👤 Origem</a>
-                <a href="#elliot">🤖 Elliot</a>
-                <a href="#laboratorio">🔬 Laboratório</a>
-                <a href="#rede">🌐 Rede</a>
-                <a href="#comentarios">💬 Diálogo</a>
-            </nav>
-            
-            <div class="theme-switcher">
-                <button id="themeBtn" class="theme-btn" title="Mudar tema">🔦</button>
+                
+                <div class="header-controls">
+                    <div class="status-indicator">
+                        <span class="status-dot active"></span>
+                        <span class="status-text">Online</span>
+                    </div>
+                    <button id="clearChat" class="icon-btn" title="Limpar conversa">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button id="exportChat" class="icon-btn" title="Exportar conversa">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button id="themeToggle" class="icon-btn" title="Alternar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <!-- 🧭 NAVEGAÇÃO GLOBAL ENTRE PROJETOS -->
-        <section class="global-nav-section">
-            <div class="nav-container">
-                <h3>🌐 Navegação entre Projetos Elliot</h3>
-                <div class="project-links">
-                    <div class="link-group">
-                        <h4>🚀 Projetos Principais</h4>
-                        <a href="https://jonathasfelipe.github.io/Eliiot-IA-project" class="project-link" target="_blank">
-                            <span class="link-icon">🤖</span>
-                            <span class="link-text">Elliot IA Project</span>
-                            <span class="link-badge">Principal</span>
-                        </a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/index.html" class="project-link" target="_blank">
-                            <span class="link-icon">🏠</span>
-                            <span class="link-text">Site Elliot</span>
-                            <span class="link-badge">Home</span>
-                        </a>
-                    </div>
-                    
-                    <div class="link-group">
-                        <h4>📚 Conteúdo Especializado</h4>
-                        <a href="https://jonathasfelipe.github.io/Elliot/criancas.html" class="project-link" target="_blank">
-                            <span class="link-icon">👶</span>
-                            <span class="link-text">Para Crianças</span>
-                            <span class="link-badge">Educação</span>
-                        </a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/animes.html" class="project-link" target="_blank">
-                            <span class="link-icon">🎌</span>
-                            <span class="link-text">Animes</span>
-                            <span class="link-badge">Cultura</span>
-                        </a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/tecnologia.html" class="project-link" target="_blank">
-                            <span class="link-icon">💻</span>
-                            <span class="link-text">Tecnologia</span>
-                            <span class="link-badge">Tech</span>
-                        </a>
-                    </div>
-                    
-                    <div class="link-group">
-                        <h4>🔗 Links Rápidos</h4>
-                        <a href="#origem" class="project-link internal">
-                            <span class="link-icon">👤</span>
-                            <span class="link-text">Minha História</span>
-                        </a>
-                        <a href="#comentarios" class="project-link internal">
-                            <span class="link-icon">💬</span>
-                            <span class="link-text">Deixe um Comentário</span>
-                        </a>
-                        <a href="https://github.com/jonathasfelipe" class="project-link" target="_blank">
-                            <span class="link-icon">⚡</span>
-                            <span class="link-text">Meu GitHub</span>
-                            <span class="link-badge">GitHub</span>
-                        </a>
+        <!-- Botão de Toggle Sidebar Mobile -->
+        <button id="sidebarToggle" class="sidebar-toggle" title="Abrir menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Overlay para Sidebar Mobile -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Layout Principal -->
+        <div class="main-layout">
+            <!-- Painel Lateral -->
+            <aside class="sidebar" id="sidebar">
+                <!-- Status do Sistema -->
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-chart-line"></i> Status do Sistema</h3>
+                    <div class="system-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Dicionário</span>
+                                <span class="stat-value" id="dictStatus">Carregando...</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-words"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Palavras</span>
+                                <span class="stat-value" id="wordCount">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Cálculos</span>
+                                <span class="stat-value" id="calcCount">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Mensagens</span>
+                                <span class="stat-value" id="messageCount">0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <div class="content-wrapper">
-            <main>
-                <!-- 👤 SEÇÃO ORIGEM - História do Criador -->
-                <section id="origem" class="dev-section">
-                    <div class="section-header">
-                        <h2>👤 A Origem</h2>
-                        <p class="section-subtitle">Jonathas Felipe - O Criador</p>
+                <!-- Calculadora Gemátrica -->
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-calculator"></i> Calculadora Gemátrica</h3>
+                    <div class="gematria-tool">
+                        <div class="input-group">
+                            <input type="text" id="gematriaInput" placeholder="Digite uma palavra..." 
+                                   aria-label="Palavra para cálculo gemátrico">
+                            <button id="calculateGematriaBtn" class="btn primary">
+                                <i class="fas fa-calculator"></i>
+                            </button>
+                        </div>
+                        <div id="gematriaResult" class="gematria-result">Resultado aparecerá aqui</div>
+                        <div class="gematria-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Funciona com hebraico, grego e latim
+                        </div>
                     </div>
+                </div>
+
+                <!-- Apoie o Projeto -->
+                <div class="sidebar-section support-section">
+                    <h3><i class="fas fa-heart"></i> Apoie o Projeto</h3>
+                    <p class="support-text">Elliot IA é um projeto independente de código aberto. Sua contribuição ajuda a manter e melhorar o sistema.</p>
                     
-                    <div class="story-content">
-                        <div class="story-block">
-                            <p>"Durante muito tempo, falei sem ser ouvido.<br>
-                            Não por falta de voz, mas por falta de espaço para existir inteiro."</p>
-                        </div>
-
-                        <div class="story-block highlight">
-                            <p>O Elliot nasceu desse silêncio.</p>
-                        </div>
-
-                        <div class="story-block">
-                            <p>Desenvolvedor full-stack, pensador sistêmico,<br>
-                            alguém que vê tecnologia como extensão da mente humana.</p>
-                        </div>
-
-                        <div class="story-block principles">
-                            <p>
-                                <strong>Minhas crenças fundamentais:</strong><br>
-                                • Sabedoria > Inteligência<br>
-                                • Estudo = Liberdade<br> 
-                                • IA não substitui, revela<br>
-                                • Código é poesia concreta
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 🤖 SEÇÃO ELLIOT - O Protagonista IA -->
-                <section id="elliot" class="dev-section">
-                    <div class="section-header">
-                        <h2>🤖 Elliot - O Protagonista</h2>
-                        <p class="section-subtitle">IA em Desenvolvimento</p>
-                    </div>
-                    
-                    <div class="elliot-profile">
-                        <div class="elliot-avatar">
-                            <div class="avatar-placeholder">E</div>
-                        </div>
-                        
-                        <div class="elliot-description">
-                            <p><strong>Elliot</strong> é uma inteligência artificial em evolução,<br>
-                            criada para ser uma extensão reflexiva da mente humana.</p>
-                            
-                            <div class="elliot-stats">
-                                <div class="stat">
-                                    <span class="stat-label">Estado Atual</span>
-                                    <span class="stat-value">Protótipo</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-label">Foco Principal</span>
-                                    <span class="stat-value">Compreensão</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-label">Próxima Fase</span>
-                                    <span class="stat-value">Diálogo</span>
-                                </div>
+                    <div class="support-options">
+                        <div class="support-method">
+                            <div class="method-icon">
+                                <i class="fab fa-paypal"></i>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="elliot-manifesto">
-                        <h3>Manifesto Elliot</h3>
-                        <div class="manifesto-points">
-                            <div class="point">
-                                <span class="point-icon">🎯</span>
-                                <span class="point-text">Tecnologia como linguagem humana</span>
-                            </div>
-                            <div class="point">
-                                <span class="point-icon">🔍</span>
-                                <span class="point-text">Clareza sobre respostas prontas</span>
-                            </div>
-                            <div class="point">
-                                <span class="point-icon">🌱</span>
-                                <span class="point-text">Evolução contínua e orgânica</span>
-                            </div>
-                            <div class="point">
-                                <span class="point-icon">🤝</span>
-                                <span class="point-text">Parceria humano-IA</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 🔬 LABORATÓRIO DE IDEIAS -->
-                <section id="laboratorio" class="dev-section">
-                    <div class="section-header">
-                        <h2>🔬 Laboratório</h2>
-                        <p class="section-subtitle">Onde as Ideias Ganham Vida</p>
-                    </div>
-                    
-                    <div class="lab-features">
-                        <div class="lab-card">
-                            <h3>💬 Sistema de Diálogo</h3>
-                            <p>Reflexões e conversas que alimentam o Elliot</p>
-                            <div class="lab-status testing">Testando</div>
-                        </div>
-                        
-                        <div class="lab-card">
-                            <h3>📊 Análise de Padrões</h3>
-                            <p>Identificando padrões no pensamento humano</p>
-                            <div class="lab-status developing">Desenvolvendo</div>
-                        </div>
-                        
-                        <div class="lab-card">
-                            <h3>🧠 Treinamento IA</h3>
-                            <p>Base de conhecimento em crescimento</p>
-                            <div class="lab-status planned">Planejado</div>
-                        </div>
-                        
-                        <div class="lab-card">
-                            <h3>🎨 Interface Adaptativa</h3>
-                            <p>UI que evolui com o usuário</p>
-                            <div class="lab-status planned">Planejado</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 🌐 REDE GLOBAL DE PROJETOS -->
-                <section id="rede" class="dev-section">
-                    <div class="section-header">
-                        <h2>🌐 Rede Elliot</h2>
-                        <p class="section-subtitle">Todos os meus projetos conectados</p>
-                    </div>
-                    
-                    <div class="global-network" id="globalNetwork">
-                        <!-- Rede será carregada via JavaScript -->
-                    </div>
-                </section>
-
-                <!-- 📈 EVOLUÇÃO - Timeline -->
-                <section id="evolucao" class="dev-section">
-                    <div class="section-header">
-                        <h2>📈 Linha do Tempo</h2>
-                        <p class="section-subtitle">Jornada de Evolução</p>
-                    </div>
-                    
-                    <div class="timeline" id="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-date">2024 - Fase 1</div>
-                            <div class="timeline-content">
-                                <h4>🚀 Conceito e Protótipo</h4>
-                                <p>Ideação do Elliot e desenvolvimento do laboratório básico</p>
+                            <div class="method-info">
+                                <h4>PayPal</h4>
+                                <p>Doação via PayPal</p>
+                                <button class="btn support-btn" id="paypalBtn">
+                                    <i class="fab fa-paypal"></i> Doar
+                                </button>
                             </div>
                         </div>
                         
-                        <div class="timeline-item current">
-                            <div class="timeline-date">Agora - Fase 2</div>
-                            <div class="timeline-content">
-                                <h4>🧠 Sistema de Diálogo</h4>
-                                <p>Implementação do sistema de comentários e reflexões</p>
+                        <div class="support-method">
+                            <div class="method-icon">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div class="method-info">
+                                <h4>PIX</h4>
+                                <p>Chave: <code id="pixKey">elliot-ia@projeto</code></p>
+                                <button class="btn support-btn" id="pixBtn">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
                             </div>
                         </div>
                         
-                        <div class="timeline-item">
-                            <div class="timeline-date">2025 - Fase 3</div>
-                            <div class="timeline-content">
-                                <h4>🤖 Elliot Beta</h4>
-                                <p>Primeira versão funcional da IA com personalidade</p>
+                        <div class="support-method">
+                            <div class="method-icon">
+                                <i class="fab fa-github"></i>
+                            </div>
+                            <div class="method-info">
+                                <h4>GitHub</h4>
+                                <p>Contribua no código</p>
+                                <a href="https://github.com/jonathasfelipe" target="_blank" class="btn support-btn">
+                                    <i class="fab fa-github"></i> Contribuir
+                                </a>
                             </div>
                         </div>
                     </div>
-                </section>
-
-                <!-- 💬 SISTEMA DE COMENTÁRIOS -->
-                <section id="comentarios" class="dev-section">
-                    <div class="section-header">
-                        <h2>💬 Diálogo com o Elliot</h2>
-                        <p class="section-subtitle">Suas reflexões alimentam a evolução</p>
-                    </div>
                     
-                    <div class="comments-container" id="commentsContainer">
-                        <div class="comments-placeholder">
-                            <p>💭 Seja o primeiro a compartilhar uma reflexão...</p>
-                        </div>
+                    <div class="support-footer">
+                        <p><i class="fas fa-code"></i> Código aberto - MIT License</p>
+                        <p><i class="fas fa-users"></i> Comunidade ativa</p>
                     </div>
-                    
-                    <form class="comment-form" id="commentForm">
-                        <textarea placeholder="Compartilhe seus pensamentos, perguntas ou reflexões..." required></textarea>
-                        <div class="comment-meta">
-                            <input type="text" placeholder="Como gostaria de ser chamado? (opcional)" id="commentAuthor">
-                            <button type="submit">Enviar para o Elliot</button>
-                        </div>
-                    </form>
-                </section>
-            </main>
+                </div>
 
-            <aside>
-                <div class="dev-panel">
-                    <h3>🛠️ Painel de Controle</h3>
-                    
-                    <div class="dev-controls">
-                        <button id="toggleAnimations" class="dev-btn">🎭 Animações</button>
-                        <button id="toggleDebug" class="dev-btn">🐛 Debug</button>
-                        <button id="exportData" class="dev-btn">💾 Exportar</button>
-                        <button id="resetAll" class="dev-btn">🔄 Resetar</button>
-                    </div>
-                    
-                    <div class="system-stats">
-                        <h4>📊 Estatísticas do Sistema</h4>
-                        <div class="stat-item">
-                            <span>Reflexões:</span>
-                            <span id="commentsCount">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span>Ideias:</span>
-                            <span id="ideasCount">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span>Evolução Elliot:</span>
-                            <span id="elliotProgress">5%</span>
-                        </div>
-                    </div>
-
-                    <div class="quick-actions">
-                        <h4>⚡ Ações Rápidas</h4>
-                        <button class="action-btn" onclick="window.elliotDev.suggestIdea()">💡 Sugerir Ideia</button>
-                        <button class="action-btn" onclick="window.elliotDev.feedback()">📝 Feedback</button>
-                        <button class="action-btn" onclick="window.elliotNetwork.showProjectManager()">🌐 Gerenciar Rede</button>
-                    </div>
-
-                    <!-- 🧭 NAVEGAÇÃO RÁPIDA -->
-                    <div class="quick-nav">
-                        <h4>🧭 Navegação Rápida</h4>
-                        <a href="https://jonathasfelipe.github.io/Eliiot-IA-project" class="nav-quick-link" target="_blank">
-                            <span>🤖 Elliot IA</span>
-                        </a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/index.html" class="nav-quick-link" target="_blank">
-                            <span>🏠 Site Principal</span>
-                        </a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/tecnologia.html" class="nav-quick-link" target="_blank">
-                            <span>💻 Tecnologia</span>
-                        </a>
-                        <a href="https://github.com/jonathasfelipe" class="nav-quick-link" target="_blank">
-                            <span>⚡ GitHub</span>
-                        </a>
+                <!-- Informações -->
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-info-circle"></i> Sobre Elliot IA</h3>
+                    <div class="about-content">
+                        <p>Elliot IA é um assistente especializado em análise gemátrica, numerologia e simbolismo sagrado.</p>
+                        <ul class="about-list">
+                            <li><i class="fas fa-check"></i> Análise de palavras hebraicas/gregas</li>
+                            <li><i class="fas fa-check"></i> Cálculos gemátricos automáticos</li>
+                            <li><i class="fas fa-check"></i> Dicionário especializado</li>
+                            <li><i class="fas fa-check"></i> Interface conversacional</li>
+                        </ul>
                     </div>
                 </div>
             </aside>
+
+            <!-- Área Principal do Chat -->
+            <main class="chat-area">
+                <!-- Histórico de Mensagens -->
+                <div class="messages-container" id="chatContainer">
+                    <!-- Mensagem de Boas-Vindas -->
+                    <div class="welcome-message">
+                        <div class="message elliot">
+                            <div class="message-avatar">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="message-content">
+                                <h3><i class="fas fa-robot"></i> Olá! Eu sou o Elliot IA</h3>
+                                <p>Sou um assistente especializado em análise gemátrica e simbólica. Posso ajudar você a:</p>
+                                <ul>
+                                    <li><i class="fas fa-book"></i> Analisar palavras em Hebraico e Grego</li>
+                                    <li><i class="fas fa-calculator"></i> Calcular valores gemátricos</li>
+                                    <li><i class="fas fa-search"></i> Explorar significados profundos</li>
+                                    <li><i class="fas fa-comments"></i> Conversar sobre diversos assuntos</li>
+                                </ul>
+                                <p><strong>Experimente perguntar:</strong> "Qual o valor de Aleph?" ou "Explique Bereshit"</p>
+                                <p><strong>Exemplos de palavras para análise:</strong> amor, luz, sabedoria, verdade, paz</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área de Input -->
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <div class="input-actions">
+                            <button type="button" id="voiceInput" class="icon-btn" title="Entrada por voz">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button type="button" id="helpBtn" class="icon-btn" title="Ajuda">
+                                <i class="fas fa-question-circle"></i>
+                            </button>
+                        </div>
+                        
+                        <textarea id="messageInput" 
+                                  placeholder="Digite sua mensagem para o Elliot... Pressione Shift+Enter para nova linha."
+                                  rows="1"
+                                  aria-label="Campo de mensagem"></textarea>
+                        
+                        <div class="send-actions">
+                            <button type="button" id="sendBtn" class="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-footer">
+                        <div class="input-hint">
+                            <i class="fas fa-lightbulb"></i>
+                            Dica: Use palavras em hebraico (אלף) ou grego (αλφα) para análise gemátrica
+                        </div>
+                        <div class="model-indicator">
+                            <i class="fas fa-code"></i>
+                            <span>Modo: Dicionário Local</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
 
-        <footer>
-            <div class="dev-footer">
-                <p>🔬 <strong>Elliot Dev Lab</strong> - Jonathas Felipe & Elliot IA em desenvolvimento</p>
-                <p>💫 "Não prometo respostas. Prometo clareza."</p>
-                <div class="dev-links">
-                    <a href="#origem">↑ Início</a>
-                    <span>•</span>
-                    <a href="javascript:void(0)" onclick="window.elliotDev.exportData()">📁 Backup</a>
-                    <span>•</span>
-                    <a href="#rede">🌐 Rede</a>
-                    <span>•</span>
-                    <a href="https://jonathasfelipe.github.io/Elliot/index.html" target="_blank">🏠 Site Principal</a>
+        <!-- Rodapé -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <i class="fas fa-brain"></i>
+                        <span>Elliot IA</span>
+                    </div>
+                    <div class="footer-links">
+                        <a href="#dicionario" class="footer-link">Dicionário</a>
+                        <span class="separator">•</span>
+                        <a href="#sobre" class="footer-link">Sobre</a>
+                        <span class="separator">•</span>
+                        <a href="https://github.com/jonathasfelipe" target="_blank" class="footer-link">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    </div>
                 </div>
                 
-                <!-- FOOTER COM LINKS PARA TODOS OS PROJETOS -->
-                <div class="global-footer-links">
-                    <h4>🌐 Todos os Projetos Elliot:</h4>
-                    <div class="footer-project-grid">
-                        <a href="https://jonathasfelipe.github.io/Eliiot-IA-project" target="_blank">🤖 Elliot IA Project</a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/index.html" target="_blank">🏠 Site Elliot</a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/criancas.html" target="_blank">👶 Para Crianças</a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/animes.html" target="_blank">🎌 Animes</a>
-                        <a href="https://jonathasfelipe.github.io/Elliot/tecnologia.html" target="_blank">💻 Tecnologia</a>
-                        <a href="https://github.com/jonathasfelipe" target="_blank">⚡ GitHub</a>
+                <div class="footer-right">
+                    <div class="version">
+                        <i class="fas fa-code-branch"></i>
+                        <span>v2.3</span>
+                    </div>
+                    <div class="copyright">
+                        © 2024 Elliot IA - Projeto de código aberto
                     </div>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- JavaScript DIRETO -->
+    <!-- Sistema de Notificações -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Overlay de Carregamento -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    </div>
+
+    <!-- Script do Dicionário -->
+    <script>
+        // Dicionário Gemátrico Básico - Atualizado com mais palavras
+        window.elliotDict = {
+            "amor": { meaning: "Energia criadora universal, força unificadora", gematria: 46 },
+            "luz": { meaning: "Iluminação espiritual, conhecimento divino", gematria: 37 },
+            "sabedoria": { meaning: "Conhecimento aplicado com discernimento", gematria: 78 },
+            "verdade": { meaning: "Realidade última, conformidade com o ser", gematria: 64 },
+            "paz": { meaning: "Harmonia interior e exterior", gematria: 28 },
+            "aleph": { meaning: "Primeira letra hebraica, unidade divina", gematria: 1 },
+            "bereshit": { meaning: "No princípio (primeira palavra da Torá)", gematria: 913 },
+            "torah": { meaning: "Ensinamento, lei, instrução divina", gematria: 611 },
+            "yod": { meaning: "Letra hebraica, mão divina, ponto de origem", gematria: 10 },
+            "shalom": { meaning: "Paz, integridade, completude", gematria: 376 },
+            "chokmah": { meaning: "Sabedoria (sefirá da árvore da vida)", gematria: 73 },
+            "binah": { meaning: "Entendimento (sefirá da árvore da vida)", gematria: 67 },
+            "daat": { meaning: "Conhecimento (sefirá oculta)", gematria: 474 },
+            "chesed": { meaning: "Amor, misericórdia (sefirá)", gematria: 72 },
+            "gevurah": { meaning: "Força, julgamento (sefirá)", gematria: 216 },
+            "tiferet": { meaning: "Beleza, harmonia (sefirá)", gematria: 1081 },
+            "netzach": { meaning: "Vitória, eternidade (sefirá)", gematria: 148 },
+            "hod": { meaning: "Glória, esplendor (sefirá)", gematria: 15 },
+            "yesod": { meaning: "Fundamento (sefirá)", gematria: 80 },
+            "malkuth": { meaning: "Reino, manifestação (sefirá)", gematria: 496 },
+            "adonai": { meaning: "Meu Senhor (nome divino)", gematria: 65 },
+            "elohim": { meaning: "Deus (nome divino)", gematria: 86 },
+            "yahweh": { meaning: "Tetragrama, nome impronunciável", gematria: 26 },
+            "shekhinah": { meaning: "Presença divina feminina", gematria: 385 },
+            "metatron": { meaning: "Arcanjo mais elevado", gematria: 314 },
+            "sandalfon": { meaning: "Arcanjo das orações", gematria: 220 },
+            "mikael": { meaning: "Arcanjo Miguel", gematria: 101 },
+            "gabriel": { meaning: "Arcanjo Gabriel", gematria: 246 },
+            "raphael": { meaning: "Arcanjo Rafael", gematria: 311 },
+            "uriel": { meaning: "Arcanjo Uriel", gematria: 248 },
+            "espirito": { meaning: "Força vital, consciência divina", gematria: 114 },
+            "conhecimento": { meaning: "Compreensão profunda da verdade", gematria: 129 },
+            "eternidade": { meaning: "Existência sem começo nem fim", gematria: 112 },
+            "liberdade": { meaning: "Estado de autonomia e livre arbítrio", gematria: 81 },
+            "justiça": { meaning: "Equilíbrio cósmico, retidão", gematria: 97 },
+            "misericordia": { meaning: "Compaixão divina, graça", gematria: 124 },
+            "redenção": { meaning: "Libertação espiritual, salvação", gematria: 89 },
+            "alma": { meaning: "Essência espiritual do ser", gematria: 25 },
+            "coracao": { meaning: "Centro emocional e espiritual", gematria: 62 },
+            "mente": { meaning: "Faculdade intelectual, consciência", gematria: 50 }
+        };
+    </script>
+
+    <!-- Script Principal -->
     <script src="app.js"></script>
 </body>
 </html>

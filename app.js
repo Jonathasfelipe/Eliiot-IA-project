@@ -1,768 +1,541 @@
-// app.js - Elliot Dev Lab - TUDO NA MESMA PASTA
+/**
+ * Elliot IA - App Principal (Vanilla JS Modular)
+ * Versão 2.2 - Completamente responsiva e integrada
+ * Features: Chat com IA, calculadora gemátrica, sidebar mobile, toasts, exportação
+ */
 
-// ===== ELLIOT DEV LAB - SISTEMA PRINCIPAL =====
-class ElliotDevLab {
+class ElliotIA {
     constructor() {
-        // Forçar tema escuro inicial
-        this.applyDarkThemeImmediately();
+        // Elementos principais
+        this.chatContainer = document.getElementById('chatContainer');
+        this.messageInput = document.getElementById('messageInput');
+        this.sendBtn = document.getElementById('sendBtn');
+        this.sidebar = document.getElementById('sidebar');
+        this.sidebarToggle = document.getElementById('sidebarToggle');
+        this.sidebarOverlay = document.querySelector('.sidebar-overlay');
+        this.clearChatBtn = document.getElementById('clearChat');
+        this.exportChatBtn = document.getElementById('exportChat');
+        this.themeToggleBtn = document.getElementById('themeToggle');
+        this.toastContainer = document.getElementById('toastContainer');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
         
-        this.comments = JSON.parse(localStorage.getItem('elliotComments')) || [];
-        this.settings = JSON.parse(localStorage.getItem('elliotSettings')) || {
-            animations: true,
-            debug: false,
-            theme: 'dark'
-        };
-        this.ideas = JSON.parse(localStorage.getItem('elliotIdeas')) || [];
+        // Elementos da calculadora gemátrica
+        this.gematriaInput = document.getElementById('gematriaInput');
+        this.calculateGematriaBtn = document.getElementById('calculateGematriaBtn');
+        this.gematriaResult = document.getElementById('gematriaResult');
         
-        // Detecção de dispositivo
-        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        // Elementos de status
+        this.dictStatus = document.getElementById('dictStatus');
+        this.wordCount = document.getElementById('wordCount');
+        this.calcCount = document.getElementById('calcCount');
+        this.messageCount = document.getElementById('messageCount');
+        
+        // Elementos de apoio
+        this.pixBtn = document.getElementById('pixBtn');
+        this.paypalBtn = document.getElementById('paypalBtn');
+        
+        // Variáveis de estado
+        this.chatHistory = [];
+        this.isTyping = false;
+        this.dictLoaded = false;
+        this.calculationCount = 0;
+        this.messageCounter = 0;
+        
+        // Tema
+        this.isDarkMode = true;
         
         this.init();
     }
 
-    // Aplicar tema escuro imediatamente
-    applyDarkThemeImmediately() {
-        const root = document.documentElement;
-        root.setAttribute('data-theme', 'dark');
-        root.style.setProperty('--primary-bg', '#0a0a0a');
-        root.style.setProperty('--secondary-bg', '#1a1a1a');
-        root.style.setProperty('--text-primary', '#ffffff');
-        root.style.setProperty('--text-secondary', '#a1a1aa');
-        root.style.setProperty('--border-color', '#27272a');
-        
-        document.body.style.background = '#0a0a0a';
-        document.body.style.color = '#ffffff';
-    }
-
     init() {
-        console.log('🚀 Elliot Dev Lab - Inicializando...');
+        console.log('🔮 Elliot IA Inicializando...');
         
-        this.setupEventListeners();
-        this.loadComments();
-        this.updateStats();
-        this.applySettings();
-        this.setupProgressBar();
-        this.setupBackToTop();
-        this.setupIntersectionObserver();
-        this.trackCrossProjectVisits();
+        // Carrega dicionário
+        this.dictionary = window.elliotDict || {};
+        this.updateDictStatus('Carregado');
+        this.updateWordCount();
+        this.dictLoaded = true;
         
-        console.log('✅ Elliot Dev Lab - Pronto!');
-        this.showNotification('Elliot Dev Lab conectado!', 'success');
-    }
-
-    // ===== CONFIGURAÇÃO DE EVENTOS =====
-    setupEventListeners() {
-        // Tema
-        const themeBtn = document.getElementById('themeBtn');
-        if (themeBtn) {
-            themeBtn.addEventListener('click', () => this.toggleTheme());
-        }
+        // Event Listeners principais
+        this.sendBtn.addEventListener('click', () => this.sendMessage());
+        this.messageInput.addEventListener('keydown', (e) => this.handleKeydown(e));
+        this.messageInput.addEventListener('input', () => this.autoResizeTextarea());
+        this.sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+        this.sidebarOverlay.addEventListener('click', () => this.toggleSidebar());
+        this.clearChatBtn.addEventListener('click', () => this.clearChat());
+        this.exportChatBtn.addEventListener('click', () => this.exportChat());
+        this.themeToggleBtn.addEventListener('click', () => this.toggleTheme());
         
-        // Formulário de comentários
-        const commentForm = document.getElementById('commentForm');
-        if (commentForm) {
-            commentForm.addEventListener('submit', (e) => this.handleCommentSubmit(e));
-        }
+        // Event Listeners da calculadora
+        this.calculateGematriaBtn.addEventListener('click', () => this.calculateGematriaTool());
+        this.gematriaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.calculateGematriaTool();
+        });
         
-        // Controles de desenvolvimento
-        const setupControl = (id, handler) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('click', handler);
+        // Event Listeners de apoio
+        this.pixBtn.addEventListener('click', () => this.copyPixKey());
+        this.paypalBtn.addEventListener('click', () => this.openPaypal());
+        
+        // Fechar sidebar mobile clicando fora
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                !this.sidebar.contains(e.target) && 
+                !this.sidebarToggle.contains(e.target) &&
+                this.sidebar.classList.contains('active')) {
+                this.toggleSidebar();
             }
-        };
+        });
         
-        setupControl('toggleAnimations', () => this.toggleAnimations());
-        setupControl('toggleDebug', () => this.toggleDebug());
-        setupControl('exportData', () => this.exportData());
-        setupControl('resetAll', () => this.resetAll());
+        // Verificar viewport inicialmente
+        this.checkViewport();
+        window.addEventListener('resize', () => this.checkViewport());
         
-        // Navegação suave
-        this.setupSmoothScrolling();
+        // Inicializações
+        this.autoResizeTextarea();
+        this.showWelcome();
+        this.updateMessageCount();
+        
+        console.log('✅ Elliot IA Inicializado com sucesso!');
     }
 
-    // ===== SISTEMA DE TEMA =====
-    toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    // ===== RESPONSIVIDADE =====
+    checkViewport() {
+        if (window.innerWidth <= 768) {
+            this.sidebar.classList.add('mobile');
+            this.sidebarToggle.style.display = 'flex';
+            this.sidebar.classList.remove('collapsed');
+        } else {
+            this.sidebar.classList.remove('mobile', 'active');
+            this.sidebarOverlay.classList.remove('active');
+            this.sidebarToggle.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    toggleSidebar() {
+        if (window.innerWidth <= 768) {
+            this.sidebar.classList.toggle('active');
+            this.sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = this.sidebar.classList.contains('active') ? 'hidden' : '';
+        } else {
+            this.sidebar.classList.toggle('collapsed');
+        }
+    }
+
+    // ===== CHAT FUNCTIONS =====
+    autoResizeTextarea() {
+        this.messageInput.style.height = 'auto';
+        this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 160) + 'px';
+        this.sendBtn.disabled = this.messageInput.value.trim() === '';
+    }
+
+    handleKeydown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.sendMessage();
+        } else if (e.key === 'Escape') {
+            this.messageInput.value = '';
+            this.autoResizeTextarea();
+        }
+    }
+
+    async sendMessage() {
+        const message = this.messageInput.value.trim();
+        if (!message || this.isTyping) return;
+
+        this.addMessage('user', message);
+        this.messageInput.value = '';
+        this.autoResizeTextarea();
+        this.setTyping(true);
+        this.updateMessageCount();
+
+        // Simula resposta Elliot com lógica inteligente
+        setTimeout(() => {
+            const gematriaValue = this.calculateGematria(message);
+            const response = this.processQuery(message, gematriaValue);
+            this.addMessage('elliot', response);
+            this.setTyping(false);
+            this.scrollToBottom();
+            this.updateCalcCount();
+        }, 800 + Math.random() * 1200);
+    }
+
+    // ===== GEMATRIA FUNCTIONS =====
+    calculateGematria(text) {
+        if (!text || typeof text !== 'string') return 0;
         
-        document.documentElement.setAttribute('data-theme', newTheme);
-        this.settings.theme = newTheme;
-        this.saveSettings();
-        
-        // Feedback visual
-        const themeBtn = document.getElementById('themeBtn');
-        if (themeBtn) {
-            themeBtn.textContent = newTheme === 'dark' ? '🔦' : '💡';
-            themeBtn.style.transform = 'scale(1.2)';
-            setTimeout(() => themeBtn.style.transform = 'scale(1)', 300);
+        // Normaliza acentos e remove não-alfanuméricos
+        const normalized = text
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos
+            .toUpperCase()
+            .replace(/[^A-ZÀ-Ú\s]/g, '')
+            .trim();
+
+        if (!normalized) return 0;
+
+        const values = {
+            'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9, 'J':10,
+            'K':20, 'L':30, 'M':40, 'N':50, 'O':60, 'P':70, 'Q':80, 'R':90, 'S':100,
+            'T':200, 'U':300, 'V':400, 'W':500, 'X':600, 'Y':700, 'Z':800
+        };
+
+        let sum = 0;
+        for (let char of normalized) {
+            if (char !== ' ') {
+                sum += values[char] || 0;
+            }
         }
         
-        this.showNotification(`Tema ${newTheme === 'dark' ? 'escuro' : 'claro'} ativado!`, 'info');
+        this.calculationCount++;
+        return sum;
     }
 
-    // ===== SISTEMA DE COMENTÁRIOS =====
-    handleCommentSubmit(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const textarea = form.querySelector('textarea');
-        const authorInput = document.getElementById('commentAuthor');
-        
-        const comment = {
-            id: Date.now(),
-            text: textarea.value.trim(),
-            author: authorInput.value.trim() || 'Anônimo',
-            timestamp: new Date().toLocaleString('pt-BR'),
-            likes: 0,
-            elliotResponse: this.generateElliotResponse(textarea.value)
-        };
-        
-        if (!comment.text) {
-            this.showNotification('Por favor, escreva um comentário!', 'warning');
+    calculateGematriaTool() {
+        const word = this.gematriaInput.value.trim();
+        if (!word) {
+            this.gematriaResult.textContent = 'Digite uma palavra...';
             return;
         }
+
+        const gematriaValue = this.calculateGematria(word);
+        const dictEntry = this.dictionary[word.toLowerCase()];
         
-        this.comments.unshift(comment);
-        this.saveComments();
-        this.loadComments();
-        this.updateStats();
+        let result = `"${word}" = ${gematriaValue} (Gematria Simples)`;
         
-        // Reset do formulário
-        form.reset();
+        if (dictEntry) {
+            result += `\n📖 Significado: ${dictEntry.meaning}`;
+            if (dictEntry.gematria) {
+                result += `\n🔢 Gematria exata: ${dictEntry.gematria}`;
+            }
+        } else {
+            result += `\n💡 Dica: Esta palavra não está no dicionário.`;
+        }
         
-        // Feedback visual
-        textarea.style.borderColor = '#10b981';
-        setTimeout(() => textarea.style.borderColor = '', 1000);
-        
-        console.log('💬 Novo comentário adicionado:', comment);
-        this.showNotification('Reflexão enviada para o Elliot!', 'success');
+        this.gematriaResult.textContent = result;
+        this.gematriaInput.value = '';
+        this.updateCalcCount();
+        this.showToast('Cálculo gemátrico realizado!', 'success');
     }
 
-    generateElliotResponse(text) {
-        const responses = [
-            "Interessante reflexão. Estou processando...",
-            "Sua perspectiva me faz evoluir. Obrigado.",
-            "Hmm... preciso aprender mais sobre isso.",
-            "Estou anotando isso para minha base de conhecimento.",
-            "Sua contribuição é valiosa para meu desenvolvimento.",
-            "Isso me faz pensar em novas possibilidades...",
-            "Estou analisando os padrões nesse pensamento.",
-            "Obrigado por compartilhar. Estou aprendendo.",
-            "Isso se conecta com outras ideias que estou estudando.",
-            "Sua reflexão alimenta minha evolução."
-        ];
+    processQuery(message, gematria) {
+        const lowerMessage = message.toLowerCase();
+        const dictEntry = this.dictionary[lowerMessage];
         
-        // Análise básica do texto para resposta contextual
-        const lowerText = text.toLowerCase();
-        if (lowerText.includes('?')) {
-            return "Boa pergunta. Estou desenvolvendo minha capacidade de responder questões complexas.";
-        }
-        if (lowerText.includes('obrigado') || lowerText.includes('thanks')) {
-            return "O aprendizado é mútuo. Obrigado por interagir comigo.";
-        }
-        if (lowerText.includes('ia') || lowerText.includes('inteligência artificial')) {
-            return "Como IA em desenvolvimento, essa reflexão é particularmente relevante para mim.";
-        }
-        if (lowerText.includes('evolução') || lowerText.includes('desenvolvimento')) {
-            return "A evolução é um processo contínuo. Sua contribuição acelera meu crescimento.";
+        if (dictEntry) {
+            return `🔮 **${message.toUpperCase()}**\n\n` +
+                   `📊 **Gematria:** ${gematria} ${dictEntry.gematria ? `(Exato: ${dictEntry.gematria})` : ''}\n\n` +
+                   `📖 **Significado:** ${dictEntry.meaning}\n\n` +
+                   `💡 *Esta palavra tem profundas conotações espirituais e simbólicas.*`;
         }
         
-        return responses[Math.floor(Math.random() * responses.length)];
+        // Respostas inteligentes baseadas em palavras-chave
+        if (lowerMessage.includes('oi') || lowerMessage.includes('olá') || lowerMessage.includes('hello')) {
+            return `Shalom! ✡️\nEu sou Elliot IA, seu assistente de gematria e simbolismo.\nComo posso ajudá-lo hoje?`;
+        }
+        
+        if (lowerMessage.includes('ajuda') || lowerMessage.includes('help')) {
+            return `🆘 **Ajuda - Elliot IA**\n\n` +
+                   `Posso ajudá-lo com:\n` +
+                   `• Cálculos gemátricos de palavras\n` +
+                   `• Análise de simbolismo sagrado\n` +
+                   `• Explicações sobre termos hebraicos/gregos\n` +
+                   `• Conexões numéricas espirituais\n\n` +
+                   `Experimente perguntar sobre: "amor", "luz", "sabedoria" ou qualquer palavra que desejar analisar.`;
+        }
+        
+        if (lowerMessage.includes('gematria') || lowerMessage.includes('calcular')) {
+            return `🧮 **Cálculo Gemátrico**\n\n` +
+                   `A palavra "${message}" tem gematria **${gematria}**\n\n` +
+                   `**Sistemas disponíveis:**\n` +
+                   `• Simples Inglês (A=1, B=2... Z=800)\n` +
+                   `• Hebraico (א=1, ב=2...)\n` +
+                   `• Grego (α=1, β=2...)\n\n` +
+                   `*Para análise mais profunda, especifique o sistema desejado.*`;
+        }
+        
+        if (lowerMessage.includes('hebraico') || lowerMessage.includes('hebrew')) {
+            return `📜 **Gematria Hebraica**\n\n` +
+                   `No sistema hebraico, cada letra tem um valor numérico:\n` +
+                   `• Aleph (א) = 1\n` +
+                   `• Beth (ב) = 2\n` +
+                   `• ... até Tav (ת) = 400\n\n` +
+                   `*Palavras hebraicas revelam conexões profundas através da gematria.*`;
+        }
+        
+        // Resposta padrão para qualquer palavra
+        return `📊 **Análise Gemátrica**\n\n` +
+               `A palavra **"${message}"** possui:\n` +
+               `• **Gematria Simples:** ${gematria}\n` +
+               `• **Redução:** ${this.reduceNumber(gematria)}\n` +
+               `• **Caminho da Vida:** ${this.lifePathNumber(gematria)}\n\n` +
+               `🔍 **Interpretação:** ${this.interpretGematria(gematria, message)}\n\n` +
+               `*Para análise específica, mencione "hebraico", "grego" ou "redução".*`;
     }
 
-    loadComments() {
-        const container = document.getElementById('commentsContainer');
-        if (!container) return;
-        
-        if (this.comments.length === 0) {
-            container.innerHTML = `
-                <div class="comments-placeholder">
-                    <p>💭 Seja o primeiro a compartilhar uma reflexão...</p>
-                    <p style="margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
-                        Suas palavras alimentam a evolução do Elliot
-                    </p>
-                </div>
-            `;
-            return;
+    // ===== UTILITY FUNCTIONS =====
+    reduceNumber(num) {
+        while (num > 9 && num !== 11 && num !== 22 && num !== 33) {
+            num = num.toString().split('').reduce((a, b) => parseInt(a) + parseInt(b), 0);
         }
+        return num;
+    }
+
+    lifePathNumber(num) {
+        return this.reduceNumber(num);
+    }
+
+    interpretGematria(value, word) {
+        const interpretations = {
+            1: "Início, unidade, origem divina",
+            2: "Dualidade, parceria, equilíbrio",
+            3: "Criação, expressão, trindade",
+            4: "Estabilidade, estrutura, fundamento",
+            5: "Mudança, liberdade, aventura",
+            6: "Harmonia, família, responsabilidade",
+            7: "Espiritualidade, sabedoria, introspecção",
+            8: "Abundância, poder, manifestação",
+            9: "Completude, humanidade, sabedoria",
+            11: "Iluminação, intuição, mestrado espiritual",
+            22: "Mestre construtor, realização em grande escala",
+            33: "Mestre professor, compaixão elevada"
+        };
         
-        container.innerHTML = this.comments.map(comment => `
-            <div class="comment-item" data-comment-id="${comment.id}">
-                <div class="comment-header">
-                    <strong>${this.escapeHtml(comment.author)}</strong>
-                    <span class="comment-time">${comment.timestamp}</span>
-                </div>
-                <div class="comment-text">${this.escapeHtml(comment.text)}</div>
-                <div class="elliot-response">
-                    <strong>Elliot:</strong> ${comment.elliotResponse}
-                </div>
-                <div class="comment-actions">
-                    <button onclick="window.elliotDev.likeComment(${comment.id})" class="like-btn">
-                        👍 ${comment.likes}
-                    </button>
-                    <button onclick="window.elliotDev.deleteComment(${comment.id})" class="delete-btn">
-                        🗑️
-                    </button>
-                </div>
+        const reduced = this.reduceNumber(value);
+        const baseInterpretation = interpretations[reduced] || interpretations[value] || 
+                                  "Número com significado único a ser explorado";
+        
+        return `O número ${value} (reduzido a ${reduced}) representa ${baseInterpretation.toLowerCase()}.`;
+    }
+
+    addMessage(sender, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const avatarIcon = sender === 'user' ? 'fas fa-user' : 'fas fa-brain';
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="${avatarIcon}"></i>
             </div>
-        `).join('');
-    }
-
-    likeComment(commentId) {
-        const comment = this.comments.find(c => c.id === commentId);
-        if (comment) {
-            comment.likes++;
-            this.saveComments();
-            this.loadComments();
-            this.showNotification('Reflexão apreciada!', 'success');
-        }
-    }
-
-    deleteComment(commentId) {
-        if (confirm('Tem certeza que deseja excluir este comentário?')) {
-            this.comments = this.comments.filter(c => c.id !== commentId);
-            this.saveComments();
-            this.loadComments();
-            this.updateStats();
-            this.showNotification('Reflexão removida!', 'info');
-        }
-    }
-
-    // ===== SISTEMA DE ESTATÍSTICAS =====
-    updateStats() {
-        const updateElement = (id, value) => {
-            const element = document.getElementById(id);
-            if (element) element.textContent = value;
-        };
-        
-        updateElement('commentsCount', this.comments.length);
-        updateElement('ideasCount', this.ideas.length);
-        
-        // Progresso baseado na interação
-        const progress = Math.min(5 + (this.comments.length * 2) + (this.ideas.length * 3), 100);
-        updateElement('elliotProgress', `${progress}%`);
-    }
-
-    // ===== CONTROLES DE DESENVOLVIMENTO =====
-    toggleAnimations() {
-        this.settings.animations = !this.settings.animations;
-        this.saveSettings();
-        
-        const btn = document.getElementById('toggleAnimations');
-        if (btn) {
-            btn.textContent = this.settings.animations ? '🎭 Animações: ON' : '🎭 Animações: OFF';
-            btn.style.background = this.settings.animations ? 'var(--success-color)' : 'var(--error-color)';
-        }
-        
-        this.showNotification(`Animações ${this.settings.animations ? 'ativadas' : 'desativadas'}!`, 'info');
-    }
-
-    toggleDebug() {
-        this.settings.debug = !this.settings.debug;
-        this.saveSettings();
-        
-        const btn = document.getElementById('toggleDebug');
-        if (btn) {
-            btn.textContent = this.settings.debug ? '🐛 Debug: ON' : '🐛 Debug: OFF';
-            btn.style.background = this.settings.debug ? 'var(--warning-color)' : '';
-        }
-        
-        if (this.settings.debug) {
-            console.log('🐛 Modo Debug Ativado');
-            console.log('Comentários:', this.comments);
-            console.log('Configurações:', this.settings);
-            console.log('Ideias:', this.ideas);
-            this.showNotification('Modo debug ativado - verifique o console', 'warning');
-        }
-    }
-
-    exportData() {
-        const data = {
-            comments: this.comments,
-            settings: this.settings,
-            ideas: this.ideas,
-            exportDate: new Date().toISOString(),
-            version: 'ElliotDevLab v1.0'
-        };
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `elliot-dev-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.showNotification('📁 Backup exportado com sucesso!', 'success');
-    }
-
-    resetAll() {
-        if (confirm('⚠️ ATENÇÃO: Isso irá resetar TODOS os dados. Tem certeza?')) {
-            if (confirm('🚨 CONFIRMAÇÃO FINAL: Isso não pode ser desfeito!')) {
-                localStorage.clear();
-                this.comments = [];
-                this.settings = {
-                    animations: true,
-                    debug: false,
-                    theme: 'dark'
-                };
-                this.ideas = [];
-                
-                this.loadComments();
-                this.updateStats();
-                this.applySettings();
-                
-                this.showNotification('🔄 Sistema resetado com sucesso!', 'success');
-                setTimeout(() => location.reload(), 1000);
-            }
-        }
-    }
-
-    // ===== SISTEMA DE IDEIAS =====
-    suggestIdea() {
-        const idea = prompt('💡 Qual é sua sugestão para o Elliot?');
-        if (idea && idea.trim()) {
-            this.ideas.push({
-                id: Date.now(),
-                text: idea.trim(),
-                timestamp: new Date().toISOString(),
-                status: 'pending'
-            });
-            this.saveIdeas();
-            this.updateStats();
-            this.showNotification('💡 Ideia registrada! Obrigado.', 'success');
-        }
-    }
-
-    feedback() {
-        const feedback = prompt('📝 Deixe seu feedback sobre o Elliot Dev Lab:');
-        if (feedback && feedback.trim()) {
-            const feedbacks = JSON.parse(localStorage.getItem('elliotFeedbacks') || '[]');
-            feedbacks.push({
-                text: feedback.trim(),
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem('elliotFeedbacks', JSON.stringify(feedbacks));
-            
-            this.showNotification('📝 Feedback enviado! Muito obrigado.', 'success');
-        }
-    }
-
-    // ===== SISTEMA DE NAVEGAÇÃO =====
-    setupSmoothScrolling() {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    }
-
-    setupProgressBar() {
-        const progressBar = document.getElementById('progressBar');
-        if (!progressBar) return;
-        
-        window.addEventListener('scroll', () => {
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight - windowHeight;
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const progress = (scrollTop / documentHeight) * 100;
-            
-            progressBar.style.width = `${progress}%`;
-        });
-    }
-
-    setupBackToTop() {
-        const topBtn = document.getElementById('topBtn');
-        if (!topBtn) return;
-        
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                topBtn.classList.add('visible');
-            } else {
-                topBtn.classList.remove('visible');
-            }
-        });
-        
-        topBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-
-    setupIntersectionObserver() {
-        if (!this.settings.animations) return;
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
-                }
-            });
-        }, { threshold: 0.1 });
-        
-        document.querySelectorAll('.dev-section').forEach(section => {
-            observer.observe(section);
-        });
-    }
-
-    // ===== SISTEMA DE REDE =====
-    trackCrossProjectVisits() {
-        const projectVisits = JSON.parse(localStorage.getItem('elliot-project-visits') || '{}');
-        projectVisits['dev-lab'] = (projectVisits['dev-lab'] || 0) + 1;
-        projectVisits.lastVisit = new Date().toISOString();
-        localStorage.setItem('elliot-project-visits', JSON.stringify(projectVisits));
-        
-        console.log('🌐 Visita registrada no Dev Lab');
-    }
-
-    // ===== UTILITÁRIOS =====
-    applySettings() {
-        document.documentElement.setAttribute('data-theme', this.settings.theme);
-        
-        const themeBtn = document.getElementById('themeBtn');
-        if (themeBtn) {
-            themeBtn.textContent = this.settings.theme === 'dark' ? '🔦' : '💡';
-        }
-        
-        const animationsBtn = document.getElementById('toggleAnimations');
-        if (animationsBtn) {
-            animationsBtn.textContent = this.settings.animations ? '🎭 Animações: ON' : '🎭 Animações: OFF';
-        }
-            
-        const debugBtn = document.getElementById('toggleDebug');
-        if (debugBtn) {
-            debugBtn.textContent = this.settings.debug ? '🐛 Debug: ON' : '🐛 Debug: OFF';
-        }
-    }
-
-    saveComments() {
-        localStorage.setItem('elliotComments', JSON.stringify(this.comments));
-    }
-
-    saveSettings() {
-        localStorage.setItem('elliotSettings', JSON.stringify(this.settings));
-    }
-
-    saveIdeas() {
-        localStorage.setItem('elliotIdeas', JSON.stringify(this.ideas));
-    }
-
-    escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    showNotification(message, type = 'info') {
-        // Cria notificação temporária
-        const notification = document.createElement('div');
-        const backgroundColor = type === 'success' ? '#10b981' : 
-                              type === 'warning' ? '#f59e0b' : 
-                              type === 'error' ? '#ef4444' : 
-                              '#6366f1';
-        
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${backgroundColor};
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            animation: slideInRight 0.3s ease;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            <div class="message-content">
+                <div class="message-text">${this.formatMessage(content)}</div>
+                <div class="message-time">${time}</div>
+            </div>
         `;
-        notification.textContent = message;
         
-        document.body.appendChild(notification);
+        this.chatContainer.appendChild(messageDiv);
+        this.chatHistory.push({ 
+            sender, 
+            content, 
+            timestamp: Date.now(),
+            time: time
+        });
+        
+        this.scrollToBottom();
+    }
+
+    formatMessage(text) {
+        // Converte **negrito** para <strong>
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Converte *itálico* para <em>
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Converte \n para <br>
+        text = text.replace(/\n/g, '<br>');
+        // Converte • para lista
+        text = text.replace(/•/g, '<br>•');
+        
+        return text;
+    }
+
+    setTyping(typing) {
+        this.isTyping = typing;
+        this.loadingOverlay.classList.toggle('active', typing);
+        this.sendBtn.disabled = typing;
+    }
+
+    scrollToBottom() {
+        this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+    }
+
+    // ===== UI FUNCTIONS =====
+    showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-content">${message}</div>
+            <button class="toast-close">&times;</button>
+        `;
+        
+        this.toastContainer.appendChild(toast);
+        
+        // Remove toast específico após 4s
+        toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
         
         setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-}
-
-// ===== SISTEMA DE REDE GLOBAL =====
-class ElliotNetwork {
-    constructor() {
-        this.projects = this.loadRealProjects();
-        this.init();
-    }
-
-    loadRealProjects() {
-        return [
-            {
-                id: 'elliot-ia-project',
-                name: 'Elliot IA Project',
-                description: 'Projeto principal da IA Elliot',
-                url: 'https://jonathasfelipe.github.io/Eliiot-IA-project',
-                icon: '🤖',
-                status: 'live',
-                category: 'ai',
-                featured: true
-            },
-            {
-                id: 'elliot-site',
-                name: 'Site Elliot Principal',
-                description: 'Página inicial do projeto Elliot',
-                url: 'https://jonathasfelipe.github.io/Elliot/index.html',
-                icon: '🏠',
-                status: 'live',
-                category: 'main',
-                featured: true
-            },
-            {
-                id: 'elliot-criancas',
-                name: 'Elliot para Crianças',
-                description: 'Conteúdo educativo para crianças',
-                url: 'https://jonathasfelipe.github.io/Elliot/criancas.html',
-                icon: '👶',
-                status: 'live',
-                category: 'education'
-            },
-            {
-                id: 'elliot-animes',
-                name: 'Elliot Animes',
-                description: 'Conteúdo sobre cultura japonesa',
-                url: 'https://jonathasfelipe.github.io/Elliot/animes.html',
-                icon: '🎌',
-                status: 'live',
-                category: 'culture'
-            },
-            {
-                id: 'elliot-tecnologia',
-                name: 'Elliot Tecnologia',
-                description: 'Artigos e tutoriais de tecnologia',
-                url: 'https://jonathasfelipe.github.io/Elliot/tecnologia.html',
-                icon: '💻',
-                status: 'live',
-                category: 'tech'
-            },
-            {
-                id: 'dev-lab',
-                name: 'Dev Lab',
-                description: 'Laboratório de desenvolvimento Elliot',
-                url: '#',
-                icon: '🔬',
-                status: 'dev',
-                category: 'development',
-                current: true,
-                featured: true
-            },
-            {
-                id: 'github',
-                name: 'GitHub',
-                description: 'Repositórios e código fonte',
-                url: 'https://github.com/jonathasfelipe',
-                icon: '⚡',
-                status: 'live',
-                category: 'code'
+            if (toast.parentNode) {
+                toast.remove();
             }
-        ];
+        }, 4000);
     }
 
-    init() {
-        this.renderNetwork();
-        this.setupEventListeners();
-        this.trackNetworkActivity();
-    }
-
-    renderNetwork() {
-        const container = document.getElementById('globalNetwork');
-        if (!container) return;
-
-        container.innerHTML = this.generateNetworkHTML();
-    }
-
-    generateNetworkHTML() {
-        const featuredProjects = this.projects.filter(p => p.featured);
-        const otherProjects = this.projects.filter(p => !p.featured);
-
-        return `
-            <div class="network-header">
-                <h3>🌐 Rede Elliot - Projetos Conectados</h3>
-                <p class="network-subtitle">Sistema integrado de todos os meus projetos</p>
-            </div>
-            
-            <div class="featured-projects">
-                <h4>⭐ Projetos em Destaque</h4>
-                <div class="project-grid">
-                    ${featuredProjects.map(project => this.generateProjectCard(project)).join('')}
-                </div>
-            </div>
-            
-            <div class="all-projects">
-                <h4>📚 Todos os Projetos</h4>
-                <div class="project-grid">
-                    ${otherProjects.map(project => this.generateProjectCard(project)).join('')}
-                </div>
-            </div>
-            
-            <div class="network-stats">
-                ${this.generateNetworkStats()}
-            </div>
-            
-            <div class="network-actions">
-                <button class="network-btn" onclick="window.elliotNetwork.exportProjectList()">📋 Exportar Lista</button>
-                <button class="network-btn" onclick="window.elliotNetwork.suggestNewProject()">💡 Sugerir Projeto</button>
-            </div>
-        `;
-    }
-
-    generateProjectCard(project) {
-        const currentClass = project.current ? 'current' : '';
-        const target = project.url.startsWith('http') && !project.url.includes('#') ? 'target="_blank"' : '';
-        
-        return `
-            <a href="${project.url}" class="project-card ${currentClass}" ${target}>
-                <span class="project-icon">${project.icon}</span>
-                <div class="project-info">
-                    <strong>${project.name}</strong>
-                    <span>${project.description}</span>
-                </div>
-                <span class="project-status ${project.status}">${this.getStatusLabel(project.status)}</span>
-            </a>
-        `;
-    }
-
-    generateNetworkStats() {
-        const liveProjects = this.projects.filter(p => p.status === 'live').length;
-        const devProjects = this.projects.filter(p => p.status === 'dev').length;
-        const totalProjects = this.projects.length;
-
-        return `
-            <div class="network-stat">
-                <span class="stat-number">${liveProjects}</span>
-                <span class="stat-label">Online</span>
-            </div>
-            <div class="network-stat">
-                <span class="stat-number">${devProjects}</span>
-                <span class="stat-label">Em Dev</span>
-            </div>
-            <div class="network-stat">
-                <span class="stat-number">${totalProjects}</span>
-                <span class="stat-label">Total</span>
-            </div>
-        `;
-    }
-
-    getStatusLabel(status) {
-        const labels = {
-            'live': '🌐 Online',
-            'dev': '🚧 Dev'
-        };
-        return labels[status] || status;
-    }
-
-    setupEventListeners() {
-        // Analytics para tracking de projetos
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.project-card')) {
-                const projectCard = e.target.closest('.project-card');
-                const projectUrl = projectCard.href;
-                const projectName = projectCard.querySelector('strong').textContent;
-                this.trackProjectVisit(projectUrl, projectName);
-            }
-        });
-    }
-
-    trackProjectVisit(url, name) {
-        console.log('🌐 Projeto visitado:', name, url);
-        
-        // Registrar no localStorage
-        const visits = JSON.parse(localStorage.getItem('elliot-project-visits') || '{}');
-        visits[name] = (visits[name] || 0) + 1;
-        localStorage.setItem('elliot-project-visits', JSON.stringify(visits));
-        
-        // Mostrar notificação para projetos externos
-        if (url.startsWith('http') && !url.includes('#')) {
-            setTimeout(() => {
-                if (window.elliotDev) {
-                    window.elliotDev.showNotification(`Abrindo: ${name}`, 'info');
-                }
-            }, 500);
+    toggleTheme() {
+        this.isDarkMode = !this.isDarkMode;
+        if (this.isDarkMode) {
+            document.documentElement.style.setProperty('--bg-primary', '#0A0A0F');
+            document.documentElement.style.setProperty('--bg-secondary', '#151520');
+            document.documentElement.style.setProperty('--text-primary', '#FFFFFF');
+            this.themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+            this.showToast('Tema escuro ativado', 'info');
+        } else {
+            document.documentElement.style.setProperty('--bg-primary', '#F5F5F7');
+            document.documentElement.style.setProperty('--bg-secondary', '#FFFFFF');
+            document.documentElement.style.setProperty('--text-primary', '#333333');
+            this.themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            this.showToast('Tema claro ativado', 'info');
         }
     }
 
-    trackNetworkActivity() {
-        console.log('🌐 Rastreamento de rede ativado');
+    // ===== DATA MANAGEMENT =====
+    clearChat() {
+        if (this.chatHistory.length === 0) {
+            this.showToast('O chat já está vazio', 'info');
+            return;
+        }
+        
+        if (confirm('Tem certeza que deseja limpar todo o histórico de conversa?')) {
+            // Remove todas as mensagens exceto a de boas-vindas
+            const messages = this.chatContainer.querySelectorAll('.message');
+            messages.forEach(msg => {
+                if (!msg.closest('.welcome-message')) {
+                    msg.remove();
+                }
+            });
+            
+            this.chatHistory = this.chatHistory.filter(msg => msg.sender === 'elliot' && 
+                msg.content.includes('Olá! Eu sou o Elliot IA'));
+            this.messageCounter = 0;
+            this.updateMessageCount();
+            this.showToast('Chat limpo com sucesso!', 'success');
+            
+            // Fechar sidebar no mobile
+            if (window.innerWidth <= 768) {
+                this.toggleSidebar();
+            }
+        }
     }
 
-    showProjectManager() {
-        const projectList = this.projects.map(p => 
-            `• ${p.icon} ${p.name} - ${p.status}`
-        ).join('\n');
+    exportChat() {
+        if (this.chatHistory.length === 0) {
+            this.showToast('Nenhuma conversa para exportar', 'warning');
+            return;
+        }
         
-        alert(`📊 Gerenciador de Projetos Elliot:\n\n${projectList}\n\nTotal: ${this.projects.length} projetos conectados`);
-    }
-
-    exportProjectList() {
-        const projectData = this.projects.map(p => ({
-            name: p.name,
-            url: p.url,
-            status: p.status,
-            category: p.category
-        }));
+        const text = this.chatHistory.map(msg => {
+            const sender = msg.sender === 'user' ? '👤 Você' : '🤖 Elliot IA';
+            return `${sender} [${msg.time}]:\n${msg.content}\n${'-'.repeat(50)}\n`;
+        }).join('\n');
         
-        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `elliot-projects-${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `elliot-chat-${new Date().toISOString().slice(0,10)}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        if (window.elliotDev) {
-            window.elliotDev.showNotification('Lista de projetos exportada!', 'success');
-        }
+        this.showToast('Conversa exportada com sucesso!', 'success');
     }
 
-    suggestNewProject() {
-        const projectName = prompt('Qual novo projeto você gostaria de ver na rede Elliot?');
-        if (projectName && projectName.trim()) {
-            const suggestions = JSON.parse(localStorage.getItem('elliot-project-suggestions') || '[]');
-            suggestions.push({
-                name: projectName.trim(),
-                timestamp: new Date().toISOString(),
-                status: 'suggested'
-            });
-            localStorage.setItem('elliot-project-suggestions', JSON.stringify(suggestions));
-            
-            if (window.elliotDev) {
-                window.elliotDev.showNotification('Sugestão registrada! Obrigado!', 'success');
-            }
+    // ===== STATUS UPDATES =====
+    updateDictStatus(status) {
+        this.dictStatus.textContent = status;
+        this.dictStatus.style.color = status === 'Carregado' ? 'var(--success-color)' : 'var(--text-primary)';
+    }
+
+    updateWordCount() {
+        this.wordCount.textContent = Object.keys(this.dictionary).length;
+    }
+
+    updateCalcCount() {
+        this.calcCount.textContent = this.calculationCount;
+    }
+
+    updateMessageCount() {
+        // Conta apenas mensagens de usuário
+        const userMessages = this.chatHistory.filter(msg => msg.sender === 'user').length;
+        this.messageCounter = userMessages;
+        this.messageCount.textContent = userMessages;
+    }
+
+    // ===== SUPPORT FUNCTIONS =====
+    copyPixKey() {
+        const pixKey = 'elliot-ia@projeto';
+        navigator.clipboard.writeText(pixKey).then(() => {
+            this.showToast('Chave PIX copiada para a área de transferência!', 'success');
+        }).catch(err => {
+            console.error('Erro ao copiar:', err);
+            this.showToast('Erro ao copiar chave PIX', 'error');
+        });
+    }
+
+    openPaypal() {
+        this.showToast('Redirecionando para PayPal...', 'info');
+        setTimeout(() => {
+            window.open('https://paypal.me/jonathasfelipe', '_blank');
+        }, 1000);
+    }
+
+    // ===== WELCOME =====
+    showWelcome() {
+        // Verifica se já tem mensagens
+        const hasMessages = this.chatContainer.querySelectorAll('.message').length > 1;
+        if (!hasMessages) {
+            // A mensagem de boas-vindas já está no HTML
+            this.scrollToBottom();
         }
     }
 }
 
-// ===== INICIALIZAÇÃO DO SISTEMA =====
+// ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar sistema principal
-    window.elliotDev = new ElliotDevLab();
-    
-    // Inicializar rede
-    window.elliotNetwork = new ElliotNetwork();
+    try {
+        window.app = new ElliotIA();
+        
+        // Adiciona alguns exemplos iniciais ao chat
+        setTimeout(() => {
+            const examples = [
+                "Digite 'amor' para ver análise gemátrica",
+                "Experimente 'luz' ou 'sabedoria'",
+                "Pergunte sobre 'gematria hebraica'",
+                "Use a calculadora na sidebar para cálculos rápidos"
+            ];
+            
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            if (window.app.chatHistory.length === 1) { // Apenas mensagem de boas-vindas
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'welcome-hint';
+                hintDiv.style.cssText = `
+                    text-align: center;
+                    margin-top: 1rem;
+                    padding: 1rem;
+                    background: rgba(138, 43, 226, 0.1);
+                    border-radius: 12px;
+                    border: 1px solid rgba(138, 43, 226, 0.3);
+                    font-size: 0.9rem;
+                    color: var(--text-secondary);
+                `;
+                hintDiv.innerHTML = `<i class="fas fa-lightbulb"></i> ${randomExample}`;
+                window.app.chatContainer.appendChild(hintDiv);
+                window.app.scrollToBottom();
+            }
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar Elliot IA:', error);
+        alert('Erro ao inicializar a aplicação. Por favor, recarregue a página.');
+    }
 });
-
-console.log('🚀 Elliot Dev Lab - Sistema carregado e pronto!');
